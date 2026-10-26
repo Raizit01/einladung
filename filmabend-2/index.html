@@ -1,0 +1,549 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#050b1e">
+<title>Filmabend · Special Edition</title>
+<meta property="og:title" content="Filmabend · Special Edition">
+<meta property="og:description" content="Du bist eingeladen: ein Film- und Serienquiz. Disc einlegen, Trailer ansehen, zusagen.">
+<meta property="og:image" content="https://raizit01.github.io/einladung/filmabend-2/vorschau.png">
+<meta property="og:url" content="https://raizit01.github.io/einladung/filmabend-2/">
+<meta property="og:type" content="website">
+<style>
+@font-face{font-family:Cinzel;src:url(../schriften/cinzel-400.woff2) format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:Cinzel;src:url(../schriften/cinzel-700.woff2) format('woff2');font-weight:700;font-display:swap}
+@font-face{font-family:Oswald;src:url(../schriften/oswald-500.woff2) format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:Atkinson;src:url(../schriften/atkinson-400.woff2) format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:Atkinson;src:url(../schriften/atkinson-700.woff2) format('woff2');font-weight:700;font-display:swap}
+:root{
+  --grund:#050b1e;--panel:#0c1a3d;--panel2:#14295a;--rand:#2f5296;--text:#f3f7ff;--leise:#b9c8e8;--leiser:#91a4cc;
+  --blau:#3aa8ff;--blau-dunkel:#0b4c94;--gold:#f5c445;--gold-glanz:#ffd65a;--rot:#e3263f;--gruen:#3ee08f;--falsch:#ff8e9b;
+  --titel:Cinzel,'Times New Roman',serif;--osd:Oswald,'Arial Narrow',sans-serif;--text-font:Atkinson,system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--grund);color:var(--text);font-family:var(--text-font);-webkit-tap-highlight-color:transparent}
+body{overflow-x:hidden}
+button{font:inherit;color:inherit;cursor:pointer}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.szene{display:none;min-height:100svh}
+body[data-szene="start"] #start,body[data-szene="trailer"] #trailer,body[data-szene="menue"] #menue,
+body[data-szene="bogen"] #bogen,body[data-szene="ticket"] #ticket{display:flex}
+
+/* Ton-Schalter */
+#ton{position:fixed;top:max(12px,env(safe-area-inset-top));right:12px;z-index:50;background:rgba(12,26,61,.7);border:1px solid var(--rand);
+  border-radius:999px;padding:6px 12px;font-family:var(--osd);font-size:13px;letter-spacing:.08em;color:var(--leise)}
+
+/* Disc */
+.disc{width:min(62vw,260px);aspect-ratio:1;border-radius:50%;position:relative;
+  background:radial-gradient(circle,var(--grund) 0 9%,#c9d4e8 9.5% 15%,#7d8db0 15.5% 16.5%,transparent 17%),
+  conic-gradient(from 20deg,#dfe7f5,#9fb6dc,#f7d9ff,#bdf3ff,#e8f0c2,#ffd6b8,#c8d0ff,#dfe7f5);
+  box-shadow:0 0 0 2px rgba(255,255,255,.25) inset,0 20px 60px rgba(58,168,255,.25)}
+.disc::after{content:"";position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(from 0deg,transparent 0 40deg,rgba(255,255,255,.55) 55deg,transparent 75deg 220deg,rgba(255,255,255,.35) 235deg,transparent 255deg)}
+.disc.dreht{animation:drehen 3.2s linear infinite}
+.disc.anlauf{animation:drehen .35s linear infinite}
+@keyframes drehen{to{transform:rotate(360deg)}}
+
+/* Start */
+#start{flex-direction:column;align-items:center;justify-content:center;gap:28px;padding:32px 16px;text-align:center;
+  background:radial-gradient(ellipse at 50% 35%,#0f2452 0,var(--grund) 65%)}
+#start .vor{font-family:var(--osd);letter-spacing:.35em;font-size:13px;color:var(--leiser);text-transform:uppercase}
+#start h1{font-family:var(--titel);font-weight:400;font-size:clamp(22px,6vw,32px);margin:0;letter-spacing:.06em}
+.knopf{background:linear-gradient(180deg,#1b3a7a,#0c1a3d);border:1px solid #6f95d8;border-radius:12px;padding:14px 26px;
+  font-family:var(--osd);font-size:18px;letter-spacing:.12em;text-transform:uppercase;color:#fff;
+  box-shadow:0 0 0 1px rgba(255,255,255,.08) inset,0 0 24px rgba(58,168,255,.35);transition:transform .15s,box-shadow .2s}
+.knopf:hover,.knopf:focus-visible{transform:translateY(-1px);box-shadow:0 0 0 1px rgba(255,255,255,.18) inset,0 0 36px rgba(58,168,255,.6);outline:none}
+.knopf:active{transform:scale(.98)}
+.knopf.gold{background:linear-gradient(180deg,#ffe58a,#d9a422);color:#3a2700;border-color:#fff1b5;box-shadow:0 0 28px rgba(245,196,69,.45)}
+.hinweis{font-size:14px;color:var(--leiser)}
+
+/* Trailer */
+#trailer{position:fixed;inset:0;background:#000;align-items:center;justify-content:center;overflow:hidden;z-index:10}
+#trailer::before,#trailer::after{content:"";position:absolute;left:0;right:0;height:11svh;background:#000;z-index:3}
+#trailer::before{top:0}#trailer::after{bottom:0}
+#leinwand{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 22px;text-align:center}
+#leinwand .karte{font-family:var(--titel);font-size:clamp(22px,6.4vw,46px);line-height:1.25;letter-spacing:.04em;max-width:900px;
+  animation:karteRein 2.6s ease both}
+#leinwand .karte.lang{animation-duration:3.2s}
+@keyframes karteRein{0%{opacity:0;transform:scale(1.06);filter:blur(6px)}18%{opacity:1;transform:scale(1);filter:blur(0)}
+  80%{opacity:1}100%{opacity:0;transform:scale(.985)}}
+#leinwand .schlag{font-family:var(--osd);text-transform:uppercase;font-size:clamp(34px,11vw,90px);letter-spacing:.06em;animation:schlag .9s ease both}
+@keyframes schlag{0%{opacity:0;transform:scale(1.5)}12%{opacity:1;transform:scale(1)}85%{opacity:1}100%{opacity:0}}
+.klein{display:block;font-family:var(--osd);font-size:clamp(13px,3.6vw,18px);letter-spacing:.35em;text-transform:uppercase;color:var(--leise);margin-top:14px}
+#ueberspringen{position:absolute;right:14px;bottom:calc(11svh + 12px);z-index:5;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);
+  border-radius:999px;padding:8px 14px;font-family:var(--osd);letter-spacing:.1em;font-size:13px;color:#cfdbee}
+/* Studiologo */
+.studio{display:flex;flex-direction:column;align-items:center;gap:16px;animation:karteRein 3.6s ease both}
+.studio .emblem{width:92px;height:92px;border-radius:50%;border:2px solid #cfdbee;display:flex;align-items:center;justify-content:center;
+  font-size:44px;color:var(--gold);box-shadow:0 0 30px rgba(207,219,238,.35),inset 0 0 20px rgba(207,219,238,.2)}
+.studio .name{font-family:var(--titel);font-weight:700;letter-spacing:.32em;font-size:clamp(18px,5vw,30px);position:relative;
+  background:linear-gradient(100deg,#7f8db0 0 40%,#fff 50%,#7f8db0 60% 100%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:glanz 2.4s .5s ease both}
+.studio .unter{font-family:var(--osd);letter-spacing:.5em;font-size:12px;color:var(--leiser)}
+@keyframes glanz{from{background-position:100% 0}to{background-position:0 0}}
+/* Titel */
+.titelbild{display:flex;flex-direction:column;align-items:center;gap:10px;position:relative}
+.titelbild h2{margin:0;font-family:var(--titel);font-weight:700;font-size:clamp(40px,13vw,120px);letter-spacing:.08em;
+  background:linear-gradient(180deg,#ffffff 0%,#dfe7f5 38%,#8796b8 52%,#e9eef8 64%,#aab6cf 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 4px 18px rgba(58,168,255,.45));animation:titelRein 1.6s cubic-bezier(.2,.8,.2,1) both}
+@keyframes titelRein{from{letter-spacing:.6em;opacity:0;filter:blur(10px)}to{letter-spacing:.08em;opacity:1}}
+.flare{position:absolute;top:42%;left:-60%;width:220%;height:3px;background:linear-gradient(90deg,transparent,rgba(120,190,255,.0) 30%,#bfe3ff 50%,rgba(120,190,255,0) 70%,transparent);
+  filter:blur(1px);opacity:0;animation:flare 1.6s .5s ease-out both;pointer-events:none}
+@keyframes flare{0%{opacity:0;transform:translateX(-30%)}30%{opacity:1}100%{opacity:0;transform:translateX(30%)}}
+.badge{font-family:var(--osd);letter-spacing:.3em;text-transform:uppercase;font-size:clamp(12px,3.4vw,16px);color:#3a2700;
+  background:linear-gradient(180deg,#ffe58a,#d9a422);padding:6px 14px 6px 18px;border-radius:4px;box-shadow:0 0 22px rgba(245,196,69,.5);
+  animation:plopp .5s 1.3s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes plopp{from{opacity:0;transform:scale(.4) rotate(-6deg)}to{opacity:1;transform:none}}
+.tagline{font-family:var(--osd);letter-spacing:.35em;text-transform:uppercase;font-size:clamp(12px,3.4vw,16px);color:var(--leise);animation:karteRein 4s 1.6s both}
+/* Billing-Block */
+.bill-rahmen{animation:billRein 4s ease both}
+@keyframes billRein{0%{opacity:0}15%{opacity:1}85%{opacity:1}100%{opacity:0}}
+.billing{font-family:var(--osd);color:#aab6cf;text-transform:uppercase;line-height:1.1;letter-spacing:.04em;max-width:640px;
+  transform:scaleY(1.45);font-size:clamp(12px,3.4vw,15px)}
+.billing b{color:#e9eef8;font-weight:500;font-size:1.25em}
+
+/* DVD-Menü */
+#menue,#bogen,#ticket{flex-direction:column;align-items:center;padding:calc(56px + env(safe-area-inset-top)) 16px 40px;position:relative;
+  background:radial-gradient(ellipse at 20% 0%,rgba(58,168,255,.18),transparent 55%),radial-gradient(ellipse at 90% 100%,rgba(227,38,63,.14),transparent 50%),var(--grund)}
+.licht{position:fixed;inset:-20%;pointer-events:none;background:radial-gradient(circle at 30% 30%,rgba(58,168,255,.10),transparent 35%),
+  radial-gradient(circle at 70% 70%,rgba(207,219,238,.07),transparent 35%);animation:wabern 18s ease-in-out infinite alternate}
+@keyframes wabern{to{transform:translate(6%,-4%) rotate(8deg)}}
+.inhalt{width:100%;max-width:560px;position:relative;z-index:1}
+.kopf{text-align:center;margin-bottom:22px}
+.kopf .disc{width:110px;margin:0 auto 14px}
+.kopf h2{font-family:var(--titel);font-weight:700;font-size:clamp(34px,10vw,54px);margin:0;letter-spacing:.08em;
+  background:linear-gradient(180deg,#fff 0%,#dfe7f5 40%,#8796b8 54%,#e9eef8 66%,#aab6cf 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.kopf .badge{display:inline-block;margin-top:8px;animation:none}
+.menue{display:flex;flex-direction:column;gap:10px;margin:8px 0 22px}
+.menue button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:rgba(12,26,61,.75);border:1px solid var(--rand);
+  border-radius:12px;padding:14px 16px;font-family:var(--osd);font-size:18px;letter-spacing:.1em;text-transform:uppercase;transition:all .18s}
+.menue button .pfeil{color:var(--blau);width:16px;opacity:0;transform:translateX(-6px);transition:all .18s}
+.menue button:hover,.menue button:focus-visible{background:rgba(27,58,122,.9);border-color:#8fb5f0;box-shadow:0 0 24px rgba(58,168,255,.35);outline:none}
+.menue button:hover .pfeil,.menue button:focus-visible .pfeil,.menue button.haupt .pfeil{opacity:1;transform:none}
+.menue button.haupt{border-color:var(--gold);box-shadow:0 0 22px rgba(245,196,69,.25)}
+.menue button .neben{margin-left:auto;font-family:var(--text-font);font-size:13px;letter-spacing:0;text-transform:none;color:var(--leiser)}
+.infokarte{background:rgba(12,26,61,.75);border:1px solid var(--rand);border-radius:14px;padding:16px 18px}
+.infokarte h3{font-family:var(--osd);font-weight:500;letter-spacing:.2em;text-transform:uppercase;font-size:14px;color:var(--leise);margin:0 0 10px}
+.infokarte dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0;font-size:16px}
+.infokarte dt{color:var(--leiser)}
+.infokarte dd{margin:0}
+.kapitel{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:4px}
+.kapitel div{background:rgba(20,41,90,.7);border:1px solid var(--rand);border-radius:10px;padding:10px 12px;font-size:14px;color:var(--leise)}
+.kapitel b{display:block;font-family:var(--osd);font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:#fff;font-size:15px;margin-bottom:2px}
+.zurueck{background:none;border:none;color:var(--leiser);font-family:var(--osd);letter-spacing:.12em;text-transform:uppercase;font-size:13px;padding:8px 0;margin-bottom:6px}
+
+/* Besetzungsbogen */
+.bogen{background:rgba(12,26,61,.82);border:1px solid var(--rand);border-radius:16px;padding:20px 18px}
+.bogen h2{font-family:var(--titel);font-weight:700;letter-spacing:.06em;margin:0 0 4px;font-size:clamp(24px,7vw,32px)}
+.bogen .unterzeile{color:var(--leiser);margin:0 0 20px;font-size:15px}
+.feld{margin-bottom:22px}
+.feld>label,.feld>.label{display:block;font-family:var(--osd);font-weight:500;letter-spacing:.14em;text-transform:uppercase;font-size:14px;color:var(--leise);margin-bottom:8px}
+.feld input[type=text]{width:100%;background:#071233;border:1px solid var(--rand);border-radius:10px;padding:13px 14px;font:inherit;font-size:17px;color:#fff}
+.feld input[type=text]:focus{outline:none;border-color:var(--blau);box-shadow:0 0 0 3px rgba(58,168,255,.25)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:#071233;border:1px solid var(--rand);border-radius:999px;padding:10px 14px;font-size:16px;transition:all .15s}
+.chip[aria-pressed=true]{background:var(--blau-dunkel);border-color:var(--blau);box-shadow:0 0 16px rgba(58,168,255,.4)}
+.chip.keiner[aria-pressed=true]{background:#4a1220;border-color:var(--rot);box-shadow:none}
+.genres{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (min-width:520px){.genres{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.huelle{position:relative;text-align:left;background:linear-gradient(160deg,var(--f1),var(--f2));border:1px solid rgba(255,255,255,.18);border-radius:8px;
+  padding:12px 10px 10px 16px;min-height:96px;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;overflow:hidden;transition:transform .15s,box-shadow .2s,filter .2s}
+.huelle::before{content:"";position:absolute;left:0;top:0;bottom:0;width:7px;background:rgba(0,0,0,.35);border-right:1px solid rgba(255,255,255,.15)}
+.huelle::after{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.18) 45%,transparent 60%);transform:translateX(-100%);transition:transform .6s}
+.huelle:hover::after{transform:translateX(100%)}
+.huelle .sym{position:absolute;top:8px;right:10px;font-size:24px}
+.huelle b{font-family:var(--osd);font-weight:500;letter-spacing:.06em;text-transform:uppercase;font-size:15px;line-height:1.15}
+.huelle small{font-size:12px;color:rgba(255,255,255,.78)}
+.huelle .platz{position:absolute;top:8px;left:14px;width:26px;height:26px;border-radius:50%;background:var(--gold);color:#3a2700;font-family:var(--osd);
+  font-size:14px;display:none;align-items:center;justify-content:center;box-shadow:0 0 14px rgba(245,196,69,.7)}
+.huelle[aria-pressed=true]{transform:translateY(-3px);box-shadow:0 0 0 2px var(--gold),0 10px 24px rgba(0,0,0,.45)}
+.huelle[aria-pressed=true] .platz{display:flex}
+.genres.voll .huelle[aria-pressed=false]{filter:saturate(.35) brightness(.7)}
+.zaehler{font-family:var(--text-font);font-size:13px;letter-spacing:0;text-transform:none;color:var(--leiser);margin-left:6px}
+.fehler{color:var(--falsch);font-size:14px;margin-top:8px;min-height:0}
+.wackeln{animation:wackeln .35s}
+@keyframes wackeln{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.senden{width:100%;margin-top:4px}
+.klein-knopf{background:none;border:1px solid var(--rand);border-radius:10px;padding:10px 14px;color:var(--leise);font-size:15px;margin-top:10px;width:100%}
+
+/* Ticket */
+.ticket{position:relative;background:linear-gradient(170deg,#fff7df,#f3e2b3);color:#2b1d00;border-radius:16px;padding:22px 22px 18px;
+  box-shadow:0 20px 60px rgba(0,0,0,.5),0 0 40px rgba(245,196,69,.25);animation:ticketRein .9s cubic-bezier(.2,1.2,.4,1) both;
+  -webkit-mask:radial-gradient(circle 13px at 0 68%,transparent 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 13px at 100% 68%,transparent 98%,#000) right/51% 100% no-repeat;
+          mask:radial-gradient(circle 13px at 0 68%,transparent 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 13px at 100% 68%,transparent 98%,#000) right/51% 100% no-repeat}
+@keyframes ticketRein{from{opacity:0;transform:translateY(40px) rotate(-4deg)}to{opacity:1;transform:rotate(-1deg)}}
+.ticket .oben{display:flex;justify-content:space-between;font-family:var(--osd);letter-spacing:.25em;text-transform:uppercase;font-size:12px;color:#7a5a12}
+.ticket h2{font-family:var(--titel);font-weight:700;margin:10px 0 2px;font-size:clamp(26px,8vw,36px);letter-spacing:.06em}
+.ticket .se{font-family:var(--osd);letter-spacing:.3em;text-transform:uppercase;font-size:12px;color:#9a6a00}
+.ticket .name{font-family:var(--titel);font-size:22px;margin:16px 0 4px;word-break:break-word}
+.ticket .reihe{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0;border-top:2px dashed rgba(43,29,0,.35);padding-top:16px}
+.ticket .reihe div{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#7a5a12;font-family:var(--osd)}
+.ticket .reihe b{display:block;font-family:var(--text-font);letter-spacing:0;text-transform:none;font-size:16px;color:#2b1d00}
+.ticket .genres-t{font-size:14px;color:#5a4208}
+.barcode{height:40px;margin-top:14px;background:repeating-linear-gradient(90deg,#2b1d00 0 2px,transparent 2px 4px,#2b1d00 4px 7px,transparent 7px 9px,#2b1d00 9px 10px,transparent 10px 13px)}
+.danke{text-align:center;margin:26px 0 8px;font-size:17px;color:var(--leise)}
+
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}}
+</style>
+</head>
+<body data-szene="start">
+<button id="ton" type="button" aria-label="Ton an oder aus">🔊 Ton an</button>
+
+<!-- 1 · Disc einlegen -->
+<section id="start" class="szene" aria-labelledby="startTitel">
+  <div class="vor">Eine persönliche Einladung</div>
+  <div class="disc dreht" id="startDisc" aria-hidden="true"></div>
+  <h1 id="startTitel">Für dich liegt eine Disc bereit</h1>
+  <button class="knopf" id="einlegen" type="button">▶ Disc einlegen</button>
+  <div class="hinweis">Mit Ton am schönsten · dauert 30 Sekunden</div>
+</section>
+
+<!-- 2 · Trailer -->
+<section id="trailer" class="szene" aria-live="polite">
+  <div id="leinwand"></div>
+  <button id="ueberspringen" type="button">Überspringen ⏭</button>
+</section>
+
+<!-- 3 · DVD-Hauptmenü -->
+<section id="menue" class="szene">
+  <div class="licht" aria-hidden="true"></div>
+  <div class="inhalt">
+    <div class="kopf">
+      <div class="disc dreht" aria-hidden="true"></div>
+      <h2 data-text="titel">Filmabend</h2>
+      <div class="badge" data-text="zusatz">Special Edition</div>
+    </div>
+    <nav class="menue" aria-label="Menü">
+      <button class="haupt" type="button" data-geh="bogen"><span class="pfeil">▶</span>Ich bin dabei<span class="neben">zusagen</span></button>
+      <button type="button" data-geh="kapitel"><span class="pfeil">▶</span>Szenenauswahl<span class="neben">was dich erwartet</span></button>
+      <button type="button" data-geh="trailer"><span class="pfeil">▶</span>Trailer nochmal</button>
+    </nav>
+    <div class="infokarte" id="infokarte">
+      <h3>Vorstellungen</h3>
+      <dl>
+        <dt>Wann</dt><dd id="infoWann"></dd>
+        <dt>Uhrzeit</dt><dd data-text="uhrzeit"></dd>
+        <dt>Wo</dt><dd data-text="ort"></dd>
+        <dt>Antwort bis</dt><dd data-text="antwortBis"></dd>
+      </dl>
+    </div>
+    <div class="infokarte" id="kapitelkarte" hidden style="margin-top:14px">
+      <h3>Szenenauswahl</h3>
+      <div class="kapitel" id="kapitel"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 · Besetzungsbogen -->
+<section id="bogen" class="szene">
+  <div class="licht" aria-hidden="true"></div>
+  <div class="inhalt">
+    <button class="zurueck" type="button" data-geh="menue">◀ Hauptmenü</button>
+    <form class="bogen" id="formular" novalidate>
+      <h2>Besetzungsliste</h2>
+      <p class="unterzeile">Trag dich ein – mit deinen Genres stimmen wir das Quiz auf euch ab.</p>
+
+      <div class="feld">
+        <label for="name">Dein Name im Abspann</label>
+        <input type="text" id="name" autocomplete="given-name" maxlength="40" placeholder="z. B. Max Mustermann">
+        <div class="fehler" id="fehlerName" role="alert"></div>
+      </div>
+
+      <div class="feld">
+        <div class="label" id="termineLabel">Wann hast du Zeit? <span class="zaehler">mehrere möglich</span></div>
+        <div class="chips" id="termine" role="group" aria-labelledby="termineLabel"></div>
+        <div class="fehler" id="fehlerTermine" role="alert"></div>
+      </div>
+
+      <div class="feld">
+        <div class="label" id="genresLabel">Deine Lieblingsgenres <span class="zaehler" id="genreZaehler">bis zu 3</span></div>
+        <div class="genres" id="genres" role="group" aria-labelledby="genresLabel"></div>
+        <div class="fehler" id="fehlerGenres" role="alert"></div>
+      </div>
+
+      <div class="feld">
+        <label for="lieblingsfilm">Dein Lieblingsfilm oder deine Lieblingsserie <span class="zaehler">freiwillig</span></label>
+        <input type="text" id="lieblingsfilm" maxlength="60" placeholder="z. B. Zurück in die Zukunft">
+      </div>
+
+      <button class="knopf gold senden" type="submit">🎬 Antwort an <span data-text="gastgeber">Chris</span> schicken</button>
+    </form>
+  </div>
+</section>
+
+<!-- 5 · Kinoticket -->
+<section id="ticket" class="szene">
+  <div class="licht" aria-hidden="true"></div>
+  <div class="inhalt">
+    <div class="ticket" id="ticketKarte">
+      <div class="oben"><span>Einlass · 1 Person</span><span id="ticketNr"></span></div>
+      <h2 data-text="titel">Filmabend</h2>
+      <div class="se" data-text="zusatz">Special Edition</div>
+      <div class="name" id="ticketName"></div>
+      <div class="genres-t" id="ticketGenres"></div>
+      <div class="reihe">
+        <div>Saal<b data-text="saal">Wohnzimmer</b></div>
+        <div>Reihe<b>Sofa</b></div>
+        <div>Termin<b id="ticketTermin"></b></div>
+      </div>
+      <div class="barcode" aria-hidden="true"></div>
+    </div>
+    <p class="danke" id="dankeText"></p>
+    <button class="klein-knopf" type="button" id="erneut">Antwort nicht angekommen? Nochmal senden</button>
+    <button class="klein-knopf" type="button" id="kopieren">Antwort als Text kopieren</button>
+    <button class="klein-knopf" type="button" data-geh="bogen">Antwort ändern</button>
+  </div>
+</section>
+
+<script>
+/* ===== Hier anpassen ===== */
+const EINLADUNG = {
+  titel: 'Filmabend',
+  zusatz: 'Special Edition',
+  tagline: 'Das Film- und Serienquiz',
+  gastgeber: 'Chris',
+  uhrzeit: 'ab 19:00 Uhr',
+  ort: 'bei Chris',
+  saal: 'Wohnzimmer',
+  antwortBis: 'Sonntag, 9. November',
+  // Platzhalter – Chris trägt die echten Termine ein
+  termine: ['Fr 14.11.', 'Sa 15.11.', 'Fr 21.11.', 'Sa 22.11.'],
+  maxGenres: 3,
+  kapitelZahl: 14,
+  genres: [
+    { name: 'Action & Blockbuster', satz: 'Explosionen inklusive', sym: '💥', f: ['#8a1a12', '#e3532a'] },
+    { name: 'Animation', satz: 'Trickfilm, Pixar und Co.', sym: '🎨', f: ['#0b5c7a', '#24b3c9'] },
+    { name: 'Horror', satz: 'Nicht allein gucken', sym: '🔪', f: ['#1a0a10', '#7a1023'] },
+    { name: 'Science-Fiction', satz: 'Weit, weit weg', sym: '🚀', f: ['#101a5a', '#4b62d9'] },
+    { name: 'Fantasy', satz: 'Drachen, Ringe, Zauberstäbe', sym: '🐉', f: ['#24412a', '#5a9a4b'] },
+    { name: 'Komödie', satz: 'Zitate zum Mitsprechen', sym: '😂', f: ['#8a5a00', '#f5b62e'] },
+    { name: 'Krimi & Thriller', satz: 'Wer war es?', sym: '🕵️', f: ['#1d2333', '#5a6886'] },
+    { name: 'Romantik & Drama', satz: 'Taschentücher bereit', sym: '💔', f: ['#6b1240', '#d94b8a'] },
+    { name: 'Superhelden', satz: 'Capes und Comics', sym: '🦸', f: ['#5a0f12', '#2a4bd9'] },
+    { name: 'Serien-Klassiker', satz: 'Die großen Serien von früher', sym: '📺', f: ['#3a2a14', '#9a7240'] },
+    { name: 'Neue Serien', satz: 'Was alle gerade streamen', sym: '🍿', f: ['#3b0f5a', '#9b3ad9'] },
+    { name: 'Musik im Film', satz: 'Soundtracks und Musicals', sym: '🎵', f: ['#0f4a3a', '#2fc28f'] },
+  ],
+  kapitel: [
+    ['Emoji-Rätsel', 'Ein Film in fünf Symbolen'],
+    ['Zitate', 'Wer hat das gesagt?'],
+    ['Buzzer-Runden', 'Wer zuerst drückt …'],
+    ['Schätzfragen', 'Daneben ist auch eine Antwort'],
+    ['Bilderrätsel', 'Stück für Stück aufgedeckt'],
+    ['Großes Finale', 'Alles oder nichts'],
+  ],
+};
+/* ========================== */
+
+const $ = id => document.getElementById(id);
+const E = EINLADUNG;
+document.querySelectorAll('[data-text]').forEach(el => { const v = E[el.dataset.text]; if (v) el.textContent = v; });
+document.title = `${E.titel} · ${E.zusatz}`;
+$('infoWann').textContent = E.termine.join(' · ');
+$('kapitel').innerHTML = '';
+E.kapitel.forEach(([t, s]) => { const d = document.createElement('div'); const b = document.createElement('b'); b.textContent = t; d.append(b, s); $('kapitel').append(d); });
+
+/* ---------- Ton (alles selbst erzeugt, keine Dateien) ---------- */
+let ctx = null, master = null, stumm = false;
+function audio() {
+  if (stumm) return null;
+  if (!ctx) {
+    try {
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const komp = ctx.createDynamicsCompressor();
+      master = ctx.createGain(); master.gain.value = 0.8;
+      master.connect(komp); komp.connect(ctx.destination);
+    } catch { return null; }
+  }
+  if (ctx.state === 'suspended') ctx.resume();
+  return ctx;
+}
+function rauschen(c, sek) {
+  const b = c.createBuffer(1, Math.ceil(c.sampleRate * sek), c.sampleRate), d = b.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  const q = c.createBufferSource(); q.buffer = b; return q;
+}
+function huelle(c, t, spitze, an, ab) {
+  const g = c.createGain(); g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(spitze, t + an); g.gain.exponentialRampToValueAtTime(0.0001, t + an + ab);
+  g.connect(master); return g;
+}
+const TON = {
+  braam() {
+    const c = audio(); if (!c) return; const t = c.currentTime;
+    const g = huelle(c, t, 0.5, 0.06, 2.6);
+    const f = c.createBiquadFilter(); f.type = 'lowpass'; f.Q.value = 6;
+    f.frequency.setValueAtTime(160, t); f.frequency.exponentialRampToValueAtTime(1100, t + 0.25); f.frequency.exponentialRampToValueAtTime(120, t + 2.5);
+    f.connect(g);
+    [41.2, 41.6, 61.7, 82.4, 82.9].forEach(fr => { const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.value = fr; o.connect(f); o.start(t); o.stop(t + 2.8); });
+  },
+  schlag() {
+    const c = audio(); if (!c) return; const t = c.currentTime;
+    const o = c.createOscillator(); o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(38, t + 0.35);
+    o.connect(huelle(c, t, 0.9, 0.005, 0.6)); o.start(t); o.stop(t + 0.7);
+    const n = rauschen(c, 0.4), bp = c.createBiquadFilter(); bp.type = 'lowpass'; bp.frequency.value = 1800;
+    n.connect(bp); bp.connect(huelle(c, t, 0.35, 0.003, 0.25)); n.start(t);
+  },
+  riser() {
+    const c = audio(); if (!c) return; const t = c.currentTime;
+    const n = rauschen(c, 2.6), bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 4;
+    bp.frequency.setValueAtTime(300, t); bp.frequency.exponentialRampToValueAtTime(5000, t + 2.4);
+    const g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.35, t + 2.3); g.gain.exponentialRampToValueAtTime(0.0001, t + 2.5);
+    g.connect(master); n.connect(bp); bp.connect(g); n.start(t);
+  },
+  fanfare() {
+    const c = audio(); if (!c) return; const t = c.currentTime;
+    [[261.6, 0], [329.6, 0.12], [392, 0.24], [523.3, 0.36]].forEach(([fr, d]) => {
+      [1, 1.005].forEach(v => { const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.value = fr * v;
+        const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2200; o.connect(lp);
+        lp.connect(huelle(c, t + d, 0.12, 0.04, 1.6 - d)); o.start(t + d); o.stop(t + 2); });
+    });
+  },
+  klick() {
+    const c = audio(); if (!c) return; const t = c.currentTime;
+    const o = c.createOscillator(); o.type = 'triangle'; o.frequency.value = 1320; o.connect(huelle(c, t, 0.15, 0.003, 0.06)); o.start(t); o.stop(t + 0.1);
+  },
+  anlauf() {
+    const c = audio(); if (!c) return; const t = c.currentTime;
+    const o = c.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(60, t); o.frequency.exponentialRampToValueAtTime(420, t + 1.4);
+    o.connect(huelle(c, t, 0.12, 0.3, 1.2)); o.start(t); o.stop(t + 1.6);
+  },
+};
+$('ton').addEventListener('click', () => {
+  stumm = !stumm;
+  $('ton').textContent = stumm ? '🔇 Ton aus' : '🔊 Ton an';
+  if (stumm && ctx) ctx.suspend(); else { audio(); TON.klick(); }
+});
+
+/* ---------- Szenen ---------- */
+function geh(ziel) {
+  if (ziel === 'trailer') return trailer();
+  if (ziel === 'kapitel') { const k = $('kapitelkarte'); k.hidden = !k.hidden; if (!k.hidden) k.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); TON.klick(); return; }
+  document.body.dataset.szene = ziel; window.scrollTo(0, 0); TON.klick();
+  if (ziel === 'bogen') setTimeout(() => $('name').focus({ preventScroll: true }), 300);
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-geh]'); if (b) geh(b.dataset.geh); });
+
+$('einlegen').addEventListener('click', () => {
+  audio(); TON.anlauf();
+  $('startDisc').classList.replace('dreht', 'anlauf');
+  setTimeout(trailer, 1300);
+});
+
+/* ---------- Trailer ---------- */
+let laufNr = 0;
+const warte = ms => new Promise(r => setTimeout(r, ms));
+function zeige(html) { $('leinwand').innerHTML = html; }
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]); }
+async function trailer() {
+  const nr = ++laufNr;
+  document.body.dataset.szene = 'trailer';
+  const lauf = () => nr === laufNr;
+  const ablauf = [
+    async () => { zeige(`<div class="studio"><div class="emblem">★</div><div class="name">QUIZABEND</div><div class="unter">PICTURES</div></div>`); TON.braam(); await warte(3800); },
+    async () => { zeige(`<div class="karte">In einer Welt …</div>`); await warte(2600); },
+    async () => { zeige(`<div class="karte lang">… in der jeder glaubt,<br>jeden Film zu kennen …</div>`); await warte(3200); },
+    async () => { zeige(`<div class="karte lang">… gibt es nur einen Weg,<br>es zu beweisen.</div>`); TON.braam(); await warte(3200); },
+    async () => { for (const w of ['Ein Abend.', 'Ein Buzzer.', 'Keine Ausreden.']) { if (!lauf()) return; zeige(`<div class="schlag">${w}</div>`); TON.schlag(); await warte(900); } },
+    async () => { zeige(`<div class="karte lang">Demnächst<span class="klein">nur in einem Wohnzimmer</span></div>`); TON.riser(); await warte(2700); },
+    async () => { zeige(`<div class="titelbild"><div class="flare"></div><h2>${esc(E.titel)}</h2><div class="badge">${esc(E.zusatz)}</div><div class="tagline">${esc(E.tagline)}</div></div>`); TON.schlag(); TON.fanfare(); await warte(4400); },
+    async () => { zeige(`<div class="bill-rahmen"><div class="billing">Quizabend Pictures präsentiert eine ${esc(E.gastgeber)}-Produktion · <b>${esc(E.titel)}</b> · in ${E.kapitelZahl} Kapiteln · mit Buzzern, Emojis, Zitaten und Schätzfragen · Popcorn von der Hausbar · Musik selbst erzeugt · gedreht an Originalschauplätzen auf dem Sofa · freigegeben ab 4 Gästen · <b>Mit dir in der Hauptrolle</b></div></div>`); await warte(4200); },
+  ];
+  for (const schritt of ablauf) { if (!lauf()) return; await schritt(); }
+  if (lauf()) menue();
+}
+function menue() { laufNr++; zeige(''); document.body.dataset.szene = 'menue'; window.scrollTo(0, 0); }
+/* Nur fürs Vorschaubild (Link-Vorschau): Titel ruhig anzeigen */
+if (location.hash === '#vorschau') { document.body.dataset.szene = 'trailer'; document.documentElement.style.setProperty('--keine', '1'); zeige(`<div class="titelbild" style="animation:none"><h2 style="animation:none">${esc(E.titel)}</h2><div class="badge" style="animation:none">${esc(E.zusatz)}</div><div class="tagline" style="animation:none">${esc(E.tagline)}</div></div>`); $('ueberspringen').hidden = true; $('ton').hidden = true; }
+$('ueberspringen').addEventListener('click', () => { TON.klick(); menue(); });
+
+/* ---------- Besetzungsbogen ---------- */
+const wahl = { termine: new Set(), genres: [], keiner: false };
+function chip(text, aktiv, klasse) { const b = document.createElement('button'); b.type = 'button'; b.className = 'chip ' + (klasse || ''); b.textContent = text; b.setAttribute('aria-pressed', String(aktiv)); return b; }
+function termineZeichnen() {
+  const box = $('termine'); box.innerHTML = '';
+  E.termine.forEach(t => { const b = chip(t, wahl.termine.has(t)); b.onclick = () => { wahl.keiner = false; wahl.termine.has(t) ? wahl.termine.delete(t) : wahl.termine.add(t); TON.klick(); $('fehlerTermine').textContent = ''; termineZeichnen(); merken(); }; box.append(b); });
+  const k = chip('Leider an keinem', wahl.keiner, 'keiner'); k.onclick = () => { wahl.keiner = !wahl.keiner; if (wahl.keiner) wahl.termine.clear(); TON.klick(); $('fehlerTermine').textContent = ''; termineZeichnen(); merken(); }; box.append(k);
+}
+function genresZeichnen() {
+  const box = $('genres'); box.innerHTML = '';
+  E.genres.forEach(g => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'huelle';
+    b.style.setProperty('--f1', g.f[0]); b.style.setProperty('--f2', g.f[1]);
+    const platz = wahl.genres.indexOf(g.name);
+    b.setAttribute('aria-pressed', String(platz >= 0));
+    b.innerHTML = `<span class="platz">${platz + 1}</span><span class="sym" aria-hidden="true">${g.sym}</span><b></b><small></small>`;
+    b.querySelector('b').textContent = g.name; b.querySelector('small').textContent = g.satz;
+    b.onclick = () => {
+      const i = wahl.genres.indexOf(g.name);
+      if (i >= 0) wahl.genres.splice(i, 1);
+      else if (wahl.genres.length >= E.maxGenres) { $('fehlerGenres').textContent = `Höchstens ${E.maxGenres} – tipp erst eins ab.`; box.classList.remove('wackeln'); void box.offsetWidth; box.classList.add('wackeln'); return; }
+      else wahl.genres.push(g.name);
+      $('fehlerGenres').textContent = ''; TON.klick(); genresZeichnen(); merken();
+    };
+    box.append(b);
+  });
+  box.classList.toggle('voll', wahl.genres.length >= E.maxGenres);
+  $('genreZaehler').textContent = `${wahl.genres.length} von ${E.maxGenres}`;
+}
+
+/* Entwurf merken (nur auf diesem Handy) */
+const SPEICHER = 'einladung-' + location.pathname;
+function merken() {
+  try { localStorage.setItem(SPEICHER, JSON.stringify({ name: $('name').value, film: $('lieblingsfilm').value, termine: [...wahl.termine], genres: wahl.genres, keiner: wahl.keiner })); } catch {}
+}
+try {
+  const alt = JSON.parse(localStorage.getItem(SPEICHER) || 'null');
+  if (alt) { $('name').value = alt.name || ''; $('lieblingsfilm').value = alt.film || ''; (alt.termine || []).filter(t => E.termine.includes(t)).forEach(t => wahl.termine.add(t));
+    wahl.genres = (alt.genres || []).filter(g => E.genres.some(x => x.name === g)).slice(0, E.maxGenres); wahl.keiner = !!alt.keiner; }
+} catch {}
+$('name').addEventListener('input', () => { $('fehlerName').textContent = ''; merken(); });
+$('lieblingsfilm').addEventListener('input', merken);
+termineZeichnen(); genresZeichnen();
+
+function antwortText() {
+  const z = [`🎬 ${E.titel} – Antwort`, `Name: ${$('name').value.trim()}`];
+  z.push(wahl.keiner ? 'Termine: leider an keinem' : `Kann: ${E.termine.filter(t => wahl.termine.has(t)).join(', ')}`);
+  if (wahl.genres.length) z.push(`Genres: ${wahl.genres.join(', ')}`);
+  const film = $('lieblingsfilm').value.trim(); if (film) z.push(`Lieblingsfilm: ${film}`);
+  return z.join('\n');
+}
+async function senden() {
+  const text = antwortText();
+  try {
+    if (navigator.share) { await navigator.share({ text }); return true; }
+  } catch (e) { if (e && e.name === 'AbortError') return false; }
+  window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener');
+  return true;
+}
+$('formular').addEventListener('submit', async e => {
+  e.preventDefault();
+  $("fehlerGenres").textContent = "";
+  let ok = true;
+  if (!$('name').value.trim()) { $('fehlerName').textContent = 'Wie heißt du? Dein Name kommt in den Abspann.'; ok = false; }
+  if (!wahl.keiner && wahl.termine.size === 0) { $('fehlerTermine').textContent = 'Wähle mindestens einen Termin – oder „Leider an keinem“.'; ok = false; }
+  if (!ok) { const f = document.querySelector('.fehler:not(:empty)'); f && f.parentElement.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+  if (await senden()) ticket();
+});
+function ticket() {
+  $('ticketName').textContent = $('name').value.trim();
+  $('ticketGenres').textContent = wahl.genres.length ? 'Lieblingsgenres: ' + wahl.genres.join(' · ') : '';
+  $('ticketTermin').textContent = wahl.keiner ? 'leider nicht' : (wahl.termine.size > 1 ? `${wahl.termine.size} Optionen` : [...wahl.termine][0]);
+  $('ticketNr').textContent = 'Nr. ' + String(Math.abs([...$('name').value].reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 7)) % 9000 + 1000);
+  $('dankeText').textContent = wahl.keiner
+    ? `Schade! ${E.gastgeber} hat deine Antwort – vielleicht beim nächsten Mal.`
+    : `Danke! Deine Antwort ist auf dem Weg zu ${E.gastgeber}. Wir sehen uns im ${E.saal}.`;
+  document.body.dataset.szene = 'ticket'; window.scrollTo(0, 0);
+  TON.fanfare();
+}
+$('erneut').addEventListener('click', () => senden());
+$('kopieren').addEventListener('click', async () => {
+  const text = antwortText();
+  try { await navigator.clipboard.writeText(text); $('kopieren').textContent = 'Kopiert ✓ – jetzt in den Chat einfügen'; }
+  catch { const t = document.createElement('textarea'); t.value = text; document.body.append(t); t.select(); document.execCommand('copy'); t.remove(); $('kopieren').textContent = 'Kopiert ✓'; }
+});
+</script>
+</body>
+</html>
