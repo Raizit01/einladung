@@ -123,7 +123,8 @@ body[data-szene="bogen"] #bogen,body[data-szene="ticket"] #ticket{display:flex}
 .menue button:hover,.menue button:focus-visible{background:rgba(27,58,122,.9);border-color:#8fb5f0;box-shadow:0 0 24px rgba(58,168,255,.35);outline:none}
 .menue button:hover .pfeil,.menue button:focus-visible .pfeil,.menue button.haupt .pfeil{opacity:1;transform:none}
 .menue button.haupt{border-color:var(--gold);box-shadow:0 0 22px rgba(245,196,69,.25)}
-.menue button .neben{margin-left:auto;font-family:var(--text-font);font-size:13px;letter-spacing:0;text-transform:none;color:var(--leiser)}
+.menue button{white-space:nowrap}
+.menue button .neben{margin-left:auto;min-width:0;white-space:normal;text-align:right;line-height:1.25;font-family:var(--text-font);font-size:13px;letter-spacing:0;text-transform:none;color:var(--leiser)}
 .infokarte{background:rgba(12,26,61,.75);border:1px solid var(--rand);border-radius:14px;padding:16px 18px}
 .infokarte h3{font-family:var(--osd);font-weight:500;letter-spacing:.2em;text-transform:uppercase;font-size:14px;color:var(--leise);margin:0 0 10px}
 .infokarte dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0;font-size:16px}
@@ -216,7 +217,7 @@ body[data-szene="bogen"] #bogen,body[data-szene="ticket"] #ticket{display:flex}
       <div class="badge" data-text="zusatz">Special Edition</div>
     </div>
     <nav class="menue" aria-label="Menü">
-      <button class="haupt" type="button" data-geh="bogen"><span class="pfeil">▶</span>Ich bin dabei<span class="neben">zusagen</span></button>
+      <button class="haupt" type="button" data-geh="bogen"><span class="pfeil">▶</span>Ich bin dabei<span class="neben">zusagen und Datum auswählen</span></button>
       <button type="button" data-geh="kapitel"><span class="pfeil">▶</span>Szenenauswahl<span class="neben">was dich erwartet</span></button>
       <button type="button" data-geh="trailer"><span class="pfeil">▶</span>Trailer nochmal</button>
     </nav>
