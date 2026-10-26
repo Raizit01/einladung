@@ -130,8 +130,8 @@ body[data-szene="bogen"] #bogen,body[data-szene="ticket"] #ticket{display:flex}
 .infokarte dt{color:var(--leiser)}
 .infokarte dd{margin:0}
 .kapitel{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:4px}
-.kapitel div{background:rgba(20,41,90,.7);border:1px solid var(--rand);border-radius:10px;padding:10px 12px;font-size:14px;color:var(--leise)}
-.kapitel b{display:block;font-family:var(--osd);font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:#fff;font-size:15px;margin-bottom:2px}
+.kapitel div{background:rgba(20,41,90,.7);border:1px solid var(--rand);border-radius:10px;padding:14px 12px;text-align:center}
+.kapitel b{display:block;font-family:var(--osd);font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:#fff;font-size:16px}
 .zurueck{background:none;border:none;color:var(--leiser);font-family:var(--osd);letter-spacing:.12em;text-transform:uppercase;font-size:13px;padding:8px 0;margin-bottom:6px}
 
 /* Besetzungsbogen */
@@ -297,46 +297,10 @@ body[data-szene="bogen"] #bogen,body[data-szene="ticket"] #ticket{display:flex}
   </div>
 </section>
 
+<script src="einladung.js"></script>
 <script>
-/* ===== Hier anpassen ===== */
-const EINLADUNG = {
-  titel: 'Filmabend',
-  zusatz: 'Special Edition',
-  tagline: 'Das Film- und Serienquiz',
-  gastgeber: 'Chris',
-  uhrzeit: 'ab 19:00 Uhr',
-  ort: 'bei Chris',
-  saal: 'Wohnzimmer',
-  antwortBis: 'Sonntag, 1. November',
-  // Mögliche Termine (Chris, 26.10.2026); im Menü steht die Kurzfassung
-  termine: ['Fr 6.11.', 'Sa 7.11.', 'So 8.11.', 'Mo 9.11.', 'Di 10.11.', 'Mi 11.11.', 'Mi 18.11.', 'Di 24.11.', 'Mi 25.11.', 'Mo 30.11.'],
-  termineKurz: '6.–11. · 18. · 24.–25. · 30. November',
-  maxGenres: 3,
-  kapitelZahl: 14,
-  genres: [
-    { name: 'Action & Blockbuster', satz: 'Explosionen inklusive', sym: '💥', f: ['#8a1a12', '#e3532a'] },
-    { name: 'Animation', satz: 'Trickfilm, Pixar und Co.', sym: '🎨', f: ['#0b5c7a', '#24b3c9'] },
-    { name: 'Horror', satz: 'Nicht allein gucken', sym: '🔪', f: ['#1a0a10', '#7a1023'] },
-    { name: 'Science-Fiction', satz: 'Weit, weit weg', sym: '🚀', f: ['#101a5a', '#4b62d9'] },
-    { name: 'Fantasy', satz: 'Drachen, Ringe, Zauberstäbe', sym: '🐉', f: ['#24412a', '#5a9a4b'] },
-    { name: 'Komödie', satz: 'Zitate zum Mitsprechen', sym: '😂', f: ['#8a5a00', '#f5b62e'] },
-    { name: 'Krimi & Thriller', satz: 'Wer war es?', sym: '🕵️', f: ['#1d2333', '#5a6886'] },
-    { name: 'Romantik & Drama', satz: 'Taschentücher bereit', sym: '💔', f: ['#6b1240', '#d94b8a'] },
-    { name: 'Superhelden', satz: 'Capes und Comics', sym: '🦸', f: ['#5a0f12', '#2a4bd9'] },
-    { name: 'Serien-Klassiker', satz: 'Die großen Serien von früher', sym: '📺', f: ['#3a2a14', '#9a7240'] },
-    { name: 'Neue Serien', satz: 'Was alle gerade streamen', sym: '🍿', f: ['#3b0f5a', '#9b3ad9'] },
-    { name: 'Musik im Film', satz: 'Soundtracks und Musicals', sym: '🎵', f: ['#0f4a3a', '#2fc28f'] },
-  ],
-  kapitel: [
-    ['Emoji-Rätsel', 'Ein Film in fünf Symbolen'],
-    ['Zitate', 'Wer hat das gesagt?'],
-    ['Buzzer-Runden', 'Wer zuerst drückt …'],
-    ['Schätzfragen', 'Daneben ist auch eine Antwort'],
-    ['Bilderrätsel', 'Stück für Stück aufgedeckt'],
-    ['Großes Finale', 'Alles oder nichts'],
-  ],
-};
-/* ========================== */
+/* Einstellungen (Termine, Genres, Texte) stehen in einladung.js */
+const EINLADUNG = window.EINLADUNG;
 
 const $ = id => document.getElementById(id);
 const E = EINLADUNG;
@@ -344,72 +308,217 @@ document.querySelectorAll('[data-text]').forEach(el => { const v = E[el.dataset.
 document.title = `${E.titel} · ${E.zusatz}`;
 $('infoWann').textContent = E.termineKurz || E.termine.join(' · ');
 $('kapitel').innerHTML = '';
-E.kapitel.forEach(([t, s]) => { const d = document.createElement('div'); const b = document.createElement('b'); b.textContent = t; d.append(b, s); $('kapitel').append(d); });
+E.kapitel.forEach(t => { const d = document.createElement('div'); const b = document.createElement('b'); b.textContent = t; d.append(b); $('kapitel').append(d); });
 
-/* ---------- Ton (alles selbst erzeugt, keine Dateien) ---------- */
-let ctx = null, master = null, stumm = false;
+/* ---------- Ton: Trailer-Klang wie im Kino der 2000er – alles selbst erzeugt (Web Audio, keine Dateien) ----------
+   Braam (tiefes Blech), Taiko-Schläge, Herzschlag-Bett, Spannungs-Streicher, Riser mit Stille davor, Einschlag mit Becken,
+   Blech-Fanfare. Alles läuft über einen Hall (Kinosaal) und einen Begrenzer; der Trailer hat einen eigenen Bus, den
+   „Überspringen“ sanft ausblendet. */
+let ctx = null, master = null, hall = null, stumm = false, bus = null;
 function audio() {
   if (stumm) return null;
   if (!ctx) {
     try {
       ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const komp = ctx.createDynamicsCompressor();
-      master = ctx.createGain(); master.gain.value = 0.8;
-      master.connect(komp); komp.connect(ctx.destination);
+      const begrenzer = ctx.createDynamicsCompressor();
+      begrenzer.threshold.value = -12; begrenzer.knee.value = 8; begrenzer.ratio.value = 14; begrenzer.attack.value = 0.002; begrenzer.release.value = 0.3;
+      master = ctx.createGain(); master.gain.value = 0.85;
+      master.connect(begrenzer); begrenzer.connect(ctx.destination);
+      hall = ctx.createConvolver(); hall.buffer = raumImpuls(ctx, 3.8, 2.4);
+      const hallPegel = ctx.createGain(); hallPegel.gain.value = 0.6;
+      hall.connect(hallPegel); hallPegel.connect(master);
     } catch { return null; }
   }
   if (ctx.state === 'suspended') ctx.resume();
   return ctx;
+}
+/** Kinosaal-Hall: Stereo-Rauschen, das abklingt */
+function raumImpuls(c, sek, abfall) {
+  const n = Math.floor(c.sampleRate * sek), b = c.createBuffer(2, n, c.sampleRate);
+  for (let k = 0; k < 2; k++) { const d = b.getChannelData(k); for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, abfall); }
+  return b;
 }
 function rauschen(c, sek) {
   const b = c.createBuffer(1, Math.ceil(c.sampleRate * sek), c.sampleRate), d = b.getChannelData(0);
   for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
   const q = c.createBufferSource(); q.buffer = b; return q;
 }
-function huelle(c, t, spitze, an, ab) {
-  const g = c.createGain(); g.gain.setValueAtTime(0.0001, t);
-  g.gain.exponentialRampToValueAtTime(spitze, t + an); g.gain.exponentialRampToValueAtTime(0.0001, t + an + ab);
-  g.connect(master); return g;
+/** Verzerrung für Biss (tanh-Kurve) */
+function biss(c, menge) {
+  const w = c.createWaveShaper(), n = 1024, k = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const x = (i / (n - 1)) * 2 - 1; k[i] = Math.tanh(x * menge); }
+  w.curve = k; w.oversample = '2x'; return w;
 }
+/** Ausgang eines Klangs: trocken in den Bus (bzw. Master), ein Teil in den Hall */
+function ausgang(c, nass = 0.35) {
+  const g = c.createGain();
+  g.connect(bus ? bus.trocken : master);
+  if (nass > 0) { const s = c.createGain(); s.gain.value = nass; g.connect(s); s.connect(bus ? bus.nass : hall); }
+  return g;
+}
+/** Hüllkurve: anschwellen, halten, abklingen – liefert den Pegel-Knoten */
+function kurve(c, ziel, t, spitze, an, halten, ab) {
+  const g = c.createGain(); g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(spitze, t + an);
+  g.gain.setValueAtTime(spitze, t + an + halten);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + an + halten + ab);
+  g.connect(ziel); return g;
+}
+function osz(c, typ, fr, ziel, t, bis) { const o = c.createOscillator(); o.type = typ; o.frequency.value = fr; o.connect(ziel); o.start(t); o.stop(bis); return o; }
+function busStart() {
+  const c = audio(); if (!c) return;
+  busStopp(0.05);
+  const trocken = c.createGain(), nass = c.createGain();
+  trocken.connect(master); nass.connect(hall);
+  bus = { trocken, nass };
+}
+function busStopp(sek = 0.6) {
+  if (!bus || !ctx) return;
+  const t = ctx.currentTime, alt = bus;
+  for (const g of [alt.trocken, alt.nass]) { g.gain.setValueAtTime(g.gain.value, t); g.gain.linearRampToValueAtTime(0, t + sek); }
+  setTimeout(() => { alt.trocken.disconnect(); alt.nass.disconnect(); }, sek * 1000 + 200);
+  bus = null;
+}
+
 const TON = {
-  braam() {
+  /** Studiologo: schimmernder Akkord, der aufblüht, dazu ein Glockenton */
+  logo() {
     const c = audio(); if (!c) return; const t = c.currentTime;
-    const g = huelle(c, t, 0.5, 0.06, 2.6);
-    const f = c.createBiquadFilter(); f.type = 'lowpass'; f.Q.value = 6;
-    f.frequency.setValueAtTime(160, t); f.frequency.exponentialRampToValueAtTime(1100, t + 0.25); f.frequency.exponentialRampToValueAtTime(120, t + 2.5);
-    f.connect(g);
-    [41.2, 41.6, 61.7, 82.4, 82.9].forEach(fr => { const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.value = fr; o.connect(f); o.start(t); o.stop(t + 2.8); });
+    const aus = ausgang(c, 0.9);
+    const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(600, t); lp.frequency.exponentialRampToValueAtTime(4200, t + 2.2);
+    lp.connect(kurve(c, aus, t, 0.16, 1.4, 1.2, 2.2));
+    [146.8, 220, 293.7, 370, 440, 587.3, 659.3].forEach((fr, i) => { osz(c, i % 2 ? 'triangle' : 'sawtooth', fr, lp, t, t + 5); osz(c, 'sine', fr * 1.004, lp, t, t + 5); });
+    [1760, 2637, 3520].forEach((fr, i) => osz(c, 'sine', fr, kurve(c, aus, t + 1.3 + i * 0.05, 0.05, 0.005, 0, 2.4), t + 1.3, t + 4));
   },
-  schlag() {
+  /** BRAAM: tiefes, verzerrtes Blech, das sich öffnet und schwer ausklingt (stark > 1 = mächtiger, hoch = mit Oberstimmen) */
+  braam(stark = 1, hoch = false) {
     const c = audio(); if (!c) return; const t = c.currentTime;
-    const o = c.createOscillator(); o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(38, t + 0.35);
-    o.connect(huelle(c, t, 0.9, 0.005, 0.6)); o.start(t); o.stop(t + 0.7);
-    const n = rauschen(c, 0.4), bp = c.createBiquadFilter(); bp.type = 'lowpass'; bp.frequency.value = 1800;
-    n.connect(bp); bp.connect(huelle(c, t, 0.35, 0.003, 0.25)); n.start(t);
+    const aus = ausgang(c, 0.55);
+    const pegel = kurve(c, aus, t, 0.5 * stark, 0.09, 1.3, 2.6);
+    const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 7;
+    lp.frequency.setValueAtTime(110, t); lp.frequency.exponentialRampToValueAtTime(1500 * stark, t + 0.32); lp.frequency.exponentialRampToValueAtTime(260, t + 3.8);
+    const zerr = biss(c, 2.6); lp.connect(zerr); zerr.connect(pegel);
+    const toene = [[55, 1], [54.7, 1], [55.3, 1], [82.4, 0.8], [110, 0.7], [27.5, 0.6]];
+    if (hoch) toene.push([130.8, 0.5], [164.8, 0.45], [220, 0.35]);
+    toene.forEach(([fr, v]) => { const g = c.createGain(); g.gain.value = v * 0.35; g.connect(lp); osz(c, 'sawtooth', fr, g, t, t + 4.4); });
+    // Sub-Bass darunter (trocken, ohne Hall)
+    osz(c, 'sine', 41.2, kurve(c, ausgang(c, 0), t, 0.55 * stark, 0.05, 1, 2.2), t, t + 3.6);
+    // Luft beim Einsatz
+    const n = rauschen(c, 0.5), bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 500; bp.Q.value = 0.8;
+    n.connect(bp); bp.connect(kurve(c, aus, t, 0.25 * stark, 0.01, 0.05, 0.4)); n.start(t);
   },
-  riser() {
+  /** Taiko-Schlag: tiefer Fellton mit Tonhöhen-Fall, Anschlag-Knall, viel Raum */
+  trommel(stark = 1) {
     const c = audio(); if (!c) return; const t = c.currentTime;
-    const n = rauschen(c, 2.6), bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 4;
-    bp.frequency.setValueAtTime(300, t); bp.frequency.exponentialRampToValueAtTime(5000, t + 2.4);
-    const g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.35, t + 2.3); g.gain.exponentialRampToValueAtTime(0.0001, t + 2.5);
-    g.connect(master); n.connect(bp); bp.connect(g); n.start(t);
+    const aus = ausgang(c, 0.6);
+    const o = c.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.45);
+    o.connect(kurve(c, aus, t, 1.0 * stark, 0.004, 0.05, 1.1)); o.start(t); o.stop(t + 1.4);
+    const o2 = c.createOscillator(); o2.type = 'triangle'; o2.frequency.setValueAtTime(260, t); o2.frequency.exponentialRampToValueAtTime(90, t + 0.2);
+    o2.connect(kurve(c, aus, t, 0.35 * stark, 0.002, 0, 0.3)); o2.start(t); o2.stop(t + 0.4);
+    const n = rauschen(c, 0.5), lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2200;
+    n.connect(lp); lp.connect(kurve(c, aus, t, 0.5 * stark, 0.002, 0, 0.28)); n.start(t);
   },
-  fanfare() {
+  /** Rückwärts-Rauschen, das in den nächsten Schlag saugt */
+  sog(sek = 0.32) {
     const c = audio(); if (!c) return; const t = c.currentTime;
-    [[261.6, 0], [329.6, 0.12], [392, 0.24], [523.3, 0.36]].forEach(([fr, d]) => {
-      [1, 1.005].forEach(v => { const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.value = fr * v;
-        const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2200; o.connect(lp);
-        lp.connect(huelle(c, t + d, 0.12, 0.04, 1.6 - d)); o.start(t + d); o.stop(t + 2); });
+    const n = rauschen(c, sek + 0.05), bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 1.2;
+    bp.frequency.setValueAtTime(400, t); bp.frequency.exponentialRampToValueAtTime(5000, t + sek);
+    const g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.45, t + sek); g.gain.setValueAtTime(0.0001, t + sek + 0.01);
+    n.connect(bp); bp.connect(g); g.connect(ausgang(c, 0.3)); n.start(t);
+  },
+  /** Spannungsbett unter den Texttafeln: dunkler Dröhnton und Herzschlag, der schneller wird */
+  bett(sek) {
+    const c = audio(); if (!c) return; const t = c.currentTime;
+    const aus = ausgang(c, 0.4);
+    const dro = kurve(c, aus, t, 0.12, 1.8, sek - 2.6, 0.8);
+    const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(180, t); lp.frequency.linearRampToValueAtTime(520, t + sek); lp.connect(dro);
+    [36.7, 36.9, 73.4, 55].forEach(fr => osz(c, 'sawtooth', fr, lp, t, t + sek + 0.1));
+    // Herzschlag: lub-dub, von 1,1 s auf 0,55 s Abstand
+    let z = t + 0.9, abstand = 1.1;
+    while (z < t + sek - 0.4) {
+      for (const [d, v] of [[0, 0.75], [0.16, 0.5]]) {
+        const o = c.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(70, z + d); o.frequency.exponentialRampToValueAtTime(38, z + d + 0.18);
+        o.connect(kurve(c, ausgang(c, 0.15), z + d, v, 0.008, 0.02, 0.26)); o.start(z + d); o.stop(z + d + 0.4);
+      }
+      z += abstand; abstand = Math.max(0.55, abstand * 0.9);
+    }
+  },
+  /** Hohe Streicher-Spannung: enge Töne mit Tremolo, die anschwellen */
+  streicher(sek) {
+    const c = audio(); if (!c) return; const t = c.currentTime;
+    const aus = ausgang(c, 0.8);
+    const pegel = c.createGain(); pegel.gain.setValueAtTime(0.0001, t); pegel.gain.exponentialRampToValueAtTime(0.11, t + sek); pegel.gain.setValueAtTime(0.0001, t + sek + 0.05); pegel.connect(aus);
+    const trem = c.createGain(); trem.gain.value = 0.6; trem.connect(pegel);
+    const lfo = c.createOscillator(); lfo.frequency.value = 11; const tiefe = c.createGain(); tiefe.gain.value = 0.4; lfo.connect(tiefe); tiefe.connect(trem.gain); lfo.start(t); lfo.stop(t + sek + 0.1);
+    const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3200; lp.connect(trem);
+    [880, 932.3, 1174.7, 1244.5].forEach(fr => { osz(c, 'sawtooth', fr, lp, t, t + sek + 0.1); osz(c, 'sawtooth', fr * 1.006, lp, t, t + sek + 0.1); });
+  },
+  /** Riser: Rauschen und Töne steigen, Ticks werden schneller – endet hart (die Stille davor macht den Einschlag groß) */
+  riser(sek) {
+    const c = audio(); if (!c) return; const t = c.currentTime;
+    const aus = ausgang(c, 0.35);
+    const n = rauschen(c, sek + 0.05), bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 3;
+    bp.frequency.setValueAtTime(250, t); bp.frequency.exponentialRampToValueAtTime(7000, t + sek);
+    const g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.5, t + sek); g.gain.setValueAtTime(0.0001, t + sek + 0.01);
+    n.connect(bp); bp.connect(g); g.connect(aus); n.start(t);
+    const tg = c.createGain(); tg.gain.setValueAtTime(0.0001, t); tg.gain.exponentialRampToValueAtTime(0.14, t + sek); tg.gain.setValueAtTime(0.0001, t + sek + 0.01); tg.connect(aus);
+    [110, 164.8, 220].forEach(fr => { const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(fr, t); o.frequency.exponentialRampToValueAtTime(fr * 4, t + sek); o.connect(tg); o.start(t); o.stop(t + sek + 0.02); });
+    let z = t, abstand = 0.32;
+    while (z < t + sek - 0.05) {
+      osz(c, 'square', 1800, kurve(c, ausgang(c, 0.1), z, 0.06 + (z - t) / sek * 0.1, 0.002, 0, 0.04), z, z + 0.06);
+      z += abstand; abstand = Math.max(0.06, abstand * 0.84);
+    }
+  },
+  /** Einschlag zum Titel: Sub-Fall, Braam mit Oberstimmen, Becken, metallischer Klang */
+  einschlag() {
+    const c = audio(); if (!c) return; const t = c.currentTime;
+    TON.braam(1.5, true);
+    TON.trommel(1.4);
+    const sub = c.createOscillator(); sub.type = 'sine'; sub.frequency.setValueAtTime(80, t); sub.frequency.exponentialRampToValueAtTime(28, t + 2.2);
+    sub.connect(kurve(c, ausgang(c, 0), t, 0.9, 0.01, 0.3, 2.2)); sub.start(t); sub.stop(t + 2.8);
+    const n = rauschen(c, 3.2), hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 3500;
+    n.connect(hp); hp.connect(kurve(c, ausgang(c, 0.7), t, 0.35, 0.005, 0.05, 2.8)); n.start(t);
+    [523, 1243, 1871, 2649].forEach(fr => osz(c, 'sine', fr, kurve(c, ausgang(c, 0.8), t, 0.04, 0.003, 0, 2.5), t, t + 3));
+  },
+  /** Heldenhafte Blech-Fanfare nach dem Einschlag (D-Dur, öffnet sich) */
+  fanfare(verzug = 0) {
+    const c = audio(); if (!c) return; const t = c.currentTime + verzug;
+    const akkorde = [[0, [73.4, 146.8, 220, 293.7, 370]], [0.55, [98, 196, 293.7, 392, 493.9]], [1.1, [73.4, 146.8, 220, 293.7, 370, 440, 587.3]]];
+    akkorde.forEach(([d, toene], i) => {
+      const lang = i === 2 ? 2.4 : 0.5;
+      const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 2;
+      lp.frequency.setValueAtTime(500, t + d); lp.frequency.exponentialRampToValueAtTime(2600, t + d + 0.25);
+      lp.connect(kurve(c, ausgang(c, 0.6), t + d, i === 2 ? 0.2 : 0.15, 0.06, lang, 1.6));
+      toene.forEach(fr => { osz(c, 'sawtooth', fr, lp, t + d, t + d + lang + 1.8); osz(c, 'sawtooth', fr * 1.005, lp, t + d, t + d + lang + 1.8); });
+    });
+  },
+  /** Ausklang unter dem Abspann-Block: weiche, tiefe Fläche */
+  ausklang(sek = 4) {
+    const c = audio(); if (!c) return; const t = c.currentTime;
+    const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900;
+    lp.connect(kurve(c, ausgang(c, 0.8), t, 0.1, 0.8, sek - 1.8, 1.6));
+    [73.4, 110, 146.8, 185, 220].forEach(fr => osz(c, 'triangle', fr, lp, t, t + sek + 0.2));
+  },
+  /** Kleine Fanfare fürs Kinoticket */
+  ticket() {
+    const c = audio(); if (!c) return; const t = c.currentTime;
+    [[293.7, 0], [370, 0.1], [440, 0.2], [587.3, 0.3]].forEach(([fr, d]) => {
+      const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2400;
+      lp.connect(kurve(c, ausgang(c, 0.5), t + d, 0.1, 0.03, 0.15, 1.2 - d));
+      osz(c, 'sawtooth', fr, lp, t + d, t + 1.8); osz(c, 'sawtooth', fr * 1.005, lp, t + d, t + 1.8);
     });
   },
   klick() {
     const c = audio(); if (!c) return; const t = c.currentTime;
-    const o = c.createOscillator(); o.type = 'triangle'; o.frequency.value = 1320; o.connect(huelle(c, t, 0.15, 0.003, 0.06)); o.start(t); o.stop(t + 0.1);
+    osz(c, 'triangle', 1320, kurve(c, ausgang(c, 0.1), t, 0.15, 0.003, 0, 0.06), t, t + 0.1);
   },
+  /** Disc läuft an: Surren, das hochdreht */
   anlauf() {
     const c = audio(); if (!c) return; const t = c.currentTime;
-    const o = c.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(60, t); o.frequency.exponentialRampToValueAtTime(420, t + 1.4);
-    o.connect(huelle(c, t, 0.12, 0.3, 1.2)); o.start(t); o.stop(t + 1.6);
+    const o = c.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(60, t); o.frequency.exponentialRampToValueAtTime(520, t + 1.3);
+    o.connect(kurve(c, ausgang(c, 0.2), t, 0.12, 0.3, 0.6, 0.4)); o.start(t); o.stop(t + 1.5);
+    const n = rauschen(c, 1.4), bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.setValueAtTime(300, t); bp.frequency.exponentialRampToValueAtTime(2500, t + 1.3);
+    n.connect(bp); bp.connect(kurve(c, ausgang(c, 0.2), t, 0.08, 0.6, 0.4, 0.3)); n.start(t);
   },
 };
 $('ton').addEventListener('click', () => {
@@ -441,21 +550,22 @@ function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<':
 async function trailer() {
   const nr = ++laufNr;
   document.body.dataset.szene = 'trailer';
+  busStart();
   const lauf = () => nr === laufNr;
   const ablauf = [
-    async () => { zeige(`<div class="studio"><div class="emblem">★</div><div class="name">QUIZABEND</div><div class="unter">PICTURES</div></div>`); TON.braam(); await warte(3800); },
-    async () => { zeige(`<div class="karte">In einer Welt …</div>`); await warte(2600); },
-    async () => { zeige(`<div class="karte lang">… in der jeder glaubt,<br>jeden Film zu kennen …</div>`); await warte(3200); },
-    async () => { zeige(`<div class="karte lang">… gibt es nur einen Weg,<br>es zu beweisen.</div>`); TON.braam(); await warte(3200); },
-    async () => { for (const w of ['Ein Abend.', 'Ein Buzzer.', 'Keine Ausreden.']) { if (!lauf()) return; zeige(`<div class="schlag">${w}</div>`); TON.schlag(); await warte(900); } },
-    async () => { zeige(`<div class="karte lang">Demnächst<span class="klein">nur in einem Wohnzimmer</span></div>`); TON.riser(); await warte(2700); },
-    async () => { zeige(`<div class="titelbild"><div class="flare"></div><h2>${esc(E.titel)}</h2><div class="badge">${esc(E.zusatz)}</div><div class="tagline">${esc(E.tagline)}</div></div>`); TON.schlag(); TON.fanfare(); await warte(4400); },
-    async () => { zeige(`<div class="bill-rahmen"><div class="billing">Quizabend Pictures präsentiert eine ${esc(E.gastgeber)}-Produktion · <b>${esc(E.titel)}</b> · in ${E.kapitelZahl} Kapiteln · mit Buzzern, Emojis, Zitaten und Schätzfragen · Popcorn von der Hausbar · Musik selbst erzeugt · gedreht an Originalschauplätzen auf dem Sofa · freigegeben ab 4 Gästen · <b>Mit dir in der Hauptrolle</b></div></div>`); await warte(4200); },
+    async () => { zeige(`<div class="studio"><div class="emblem">★</div><div class="name">QUIZABEND</div><div class="unter">PICTURES</div></div>`); TON.logo(); await warte(3800); },
+    async () => { zeige(`<div class="karte">In einer Welt …</div>`); TON.braam(1); TON.bett(11.9); await warte(2600); },
+    async () => { zeige(`<div class="karte lang">… in der jeder glaubt,<br>jeden Film zu kennen …</div>`); TON.streicher(6.3); await warte(3200); },
+    async () => { zeige(`<div class="karte lang">… gibt es nur einen Weg,<br>es zu beweisen.</div>`); TON.braam(1.25, true); await warte(3200); },
+    async () => { for (const [i, w] of ['Ein Abend.', 'Ein Buzzer.', 'Keine Ausreden.'].entries()) { if (!lauf()) return; zeige(''); TON.sog(0.3); await warte(300); if (!lauf()) return; zeige(`<div class="schlag">${w}</div>`); TON.trommel(1 + i * 0.25); await warte(750); } },
+    async () => { zeige(`<div class="karte lang">Demnächst<span class="klein">nur in einem Wohnzimmer</span></div>`); TON.riser(2.4); await warte(2700); },
+    async () => { zeige(`<div class="titelbild"><div class="flare"></div><h2>${esc(E.titel)}</h2><div class="badge">${esc(E.zusatz)}</div><div class="tagline">${esc(E.tagline)}</div></div>`); TON.einschlag(); TON.fanfare(0.7); await warte(4400); },
+    async () => { zeige(`<div class="bill-rahmen"><div class="billing">Quizabend Pictures präsentiert eine ${esc(E.gastgeber)}-Produktion · <b>${esc(E.titel)}</b> · in ${E.kapitelZahl} Kapiteln · mit Buzzern, Zitaten, Bildern und Filmmusik · Popcorn von der Hausbar · Musik selbst erzeugt · gedreht an Originalschauplätzen auf dem Sofa · freigegeben ab 4 Gästen · <b>Mit dir in der Hauptrolle</b></div></div>`); TON.ausklang(4.2); await warte(4200); },
   ];
   for (const schritt of ablauf) { if (!lauf()) return; await schritt(); }
   if (lauf()) menue();
 }
-function menue() { laufNr++; zeige(''); document.body.dataset.szene = 'menue'; window.scrollTo(0, 0); }
+function menue() { laufNr++; busStopp(1.2); zeige(''); document.body.dataset.szene = 'menue'; window.scrollTo(0, 0); }
 /* Nur fürs Vorschaubild (Link-Vorschau): Titel ruhig anzeigen */
 if (location.hash === '#vorschau') { document.body.dataset.szene = 'trailer'; document.documentElement.style.setProperty('--keine', '1'); zeige(`<div class="titelbild" style="animation:none"><h2 style="animation:none">${esc(E.titel)}</h2><div class="badge" style="animation:none">${esc(E.zusatz)}</div><div class="tagline" style="animation:none">${esc(E.tagline)}</div></div>`); $('ueberspringen').hidden = true; $('ton').hidden = true; }
 $('ueberspringen').addEventListener('click', () => { TON.klick(); menue(); });
@@ -537,7 +647,7 @@ function ticket() {
     ? `Schade! ${E.gastgeber} hat deine Antwort – vielleicht beim nächsten Mal.`
     : `Danke! Deine Antwort ist auf dem Weg zu ${E.gastgeber}. Wir sehen uns im ${E.saal}.`;
   document.body.dataset.szene = 'ticket'; window.scrollTo(0, 0);
-  TON.fanfare();
+  TON.ticket();
 }
 $('erneut').addEventListener('click', () => senden());
 $('kopieren').addEventListener('click', async () => {

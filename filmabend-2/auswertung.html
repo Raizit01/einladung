@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#050b1e">
+<title>Auswertung · Filmabend</title>
+<style>
+@font-face{font-family:Cinzel;src:url(../schriften/cinzel-700.woff2) format('woff2');font-weight:700;font-display:swap}
+@font-face{font-family:Oswald;src:url(../schriften/oswald-500.woff2) format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:Atkinson;src:url(../schriften/atkinson-400.woff2) format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:Atkinson;src:url(../schriften/atkinson-700.woff2) format('woff2');font-weight:700;font-display:swap}
+:root{--grund:#050b1e;--panel:#0c1a3d;--panel2:#14295a;--rand:#2f5296;--text:#f3f7ff;--leise:#b9c8e8;--leiser:#91a4cc;--blau:#3aa8ff;--gold:#f5c445;--rot:#ff8e9b;--gruen:#3ee08f;
+  --titel:Cinzel,'Times New Roman',serif;--osd:Oswald,'Arial Narrow',sans-serif;--text-font:Atkinson,system-ui,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--grund);color:var(--text);font-family:var(--text-font);font-size:16px}
+body{padding:calc(20px + env(safe-area-inset-top)) 16px 48px;background:radial-gradient(ellipse at 20% 0%,rgba(58,168,255,.16),transparent 55%),var(--grund);min-height:100vh}
+main{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1{font-family:var(--titel);font-size:clamp(26px,7vw,40px);margin:0;letter-spacing:.06em}
+h2{font-family:var(--osd);font-weight:500;letter-spacing:.16em;text-transform:uppercase;font-size:15px;color:var(--leise);margin:0 0 12px}
+.unter{color:var(--leiser);margin:4px 0 0;font-size:15px}
+.karte{background:rgba(12,26,61,.82);border:1px solid var(--rand);border-radius:14px;padding:16px}
+textarea{width:100%;min-height:150px;background:#071233;border:1px solid var(--rand);border-radius:10px;padding:12px;font:inherit;font-size:15px;color:#fff;resize:vertical}
+textarea:focus{outline:none;border-color:var(--blau);box-shadow:0 0 0 3px rgba(58,168,255,.25)}
+.knoepfe{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+button{font:inherit;cursor:pointer;border-radius:10px;padding:11px 16px;border:1px solid var(--rand);background:#0b1a40;color:var(--text)}
+button.haupt{background:linear-gradient(180deg,#ffe58a,#d9a422);color:#3a2700;border-color:#fff1b5;font-family:var(--osd);letter-spacing:.1em;text-transform:uppercase}
+.hinweis{font-size:13px;color:var(--leiser);margin-top:10px}
+.fehler{color:var(--rot);margin-top:8px;font-size:14px}
+.kacheln{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.kachel{background:rgba(20,41,90,.7);border:1px solid var(--rand);border-radius:12px;padding:12px;text-align:center}
+.kachel b{display:block;font-family:var(--titel);font-size:30px}
+.kachel small{font-family:var(--osd);letter-spacing:.12em;text-transform:uppercase;color:var(--leiser);font-size:12px}
+.bester{font-family:var(--titel);font-size:clamp(22px,6vw,30px);color:var(--gold);margin:0 0 4px}
+.zeile{display:grid;grid-template-columns:96px minmax(0,1fr) 34px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(47,82,150,.45)}
+.zeile:last-child{border-bottom:none}
+.zeile .wer{grid-column:2 / 4;font-size:13px;color:var(--leiser);margin-top:-4px}
+.zeile.top .was{color:var(--gold)}
+.was{font-family:var(--osd);letter-spacing:.06em;font-size:15px}
+.balken{height:12px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden}
+.balken i{display:block;height:100%;border-radius:6px;background:var(--blau)}
+.zeile.top .balken i{background:linear-gradient(90deg,#ffe58a,#d9a422)}
+.zahl{font-family:var(--osd);text-align:right}
+.genre .balken i{background:var(--gruen)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-family:var(--osd);font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--leiser);text-align:left;font-size:12px;padding:6px 8px;border-bottom:1px solid var(--rand)}
+td{padding:8px;border-bottom:1px solid rgba(47,82,150,.45);vertical-align:top}
+.tabelle{overflow-x:auto}
+.absage{color:var(--rot)}
+.leer{color:var(--leiser)}
+@media (max-width:520px){.zeile{grid-template-columns:78px minmax(0,1fr) 28px}.kachel b{font-size:24px}}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Auswertung</h1>
+    <p class="unter" id="untertitel"></p>
+  </header>
+
+  <section class="karte">
+    <h2>WhatsApp-Antworten einfügen</h2>
+    <textarea id="eingabe" placeholder="Hier alle Antwort-Nachrichten einfügen – gern alle auf einmal (in WhatsApp lange drücken → Kopieren, oder den ganzen Chat exportieren)."></textarea>
+    <div class="knoepfe">
+      <button class="haupt" type="button" id="auswerten">Auswerten</button>
+      <button type="button" id="kopieren">Zusammenfassung kopieren</button>
+      <button type="button" id="leeren">Alles löschen</button>
+    </div>
+    <div class="fehler" id="fehler" role="alert"></div>
+    <p class="hinweis">Die Seite schickt nichts ins Internet. Der eingefügte Text bleibt nur in diesem Browser, bis du „Alles löschen“ tippst.</p>
+  </section>
+
+  <section id="ergebnis" hidden>
+    <div class="kacheln" style="margin-bottom:18px">
+      <div class="kachel"><b id="kAntworten">0</b><small>Antworten</small></div>
+      <div class="kachel"><b id="kZusagen">0</b><small>können</small></div>
+      <div class="kachel"><b id="kAbsagen">0</b><small>Absagen</small></div>
+    </div>
+    <section class="karte" style="margin-bottom:18px">
+      <h2>Termine</h2>
+      <p class="bester" id="bester"></p>
+      <div id="termine"></div>
+    </section>
+    <section class="karte" style="margin-bottom:18px">
+      <h2>Lieblingsgenres</h2>
+      <div id="genres"></div>
+    </section>
+    <section class="karte">
+      <h2>Alle Antworten</h2>
+      <div class="tabelle"><table><thead><tr><th>Name</th><th>Kann</th><th>Genres</th><th>Lieblingsfilm</th></tr></thead><tbody id="tabelle"></tbody></table></div>
+    </section>
+  </section>
+</main>
+
+<script src="einladung.js"></script>
+<script>
+const E = window.EINLADUNG;
+const $ = id => document.getElementById(id);
+$('untertitel').textContent = `${E.titel} · ${E.zusatz} – wer kann wann, welche Genres`;
+const SPEICHER = 'auswertung-' + location.pathname;
+
+/** Text vereinheitlichen: Leerzeichen, geschützte Leerzeichen, WhatsApp-Zeitstempel vorne weg */
+const sauber = s => s.replace(/ | /g, ' ').replace(/^\s*\[[^\]]*\]\s*[^:]{1,40}:\s*/, '').replace(/^\s*\d{1,2}\.\d{1,2}\.\d{2,4},?\s+\d{1,2}:\d{2}\s*-\s*[^:]{1,40}:\s*/, '').trim();
+const schluessel = s => s.toLowerCase().replace(/\s+/g, ' ').trim();
+
+/** Alle Antworten aus dem eingefügten Text lesen. Gleicher Name doppelt = die spätere Antwort gilt. */
+function lesen(text) {
+  const antworten = new Map();
+  let jetzt = null;
+  for (const roh of text.split(/\r?\n/)) {
+    const z = sauber(roh);
+    let m;
+    if ((m = z.match(/^name:\s*(.+)$/i))) {
+      jetzt = { name: m[1].trim(), termine: [], keiner: false, genres: [], film: '' };
+      antworten.set(schluessel(jetzt.name), jetzt);
+    } else if (!jetzt) continue;
+    else if ((m = z.match(/^kann:\s*(.+)$/i))) jetzt.termine = m[1].split(',').map(s => s.trim()).filter(Boolean);
+    else if (/^termine:\s*leider an keinem/i.test(z)) { jetzt.keiner = true; jetzt.termine = []; }
+    else if ((m = z.match(/^genres:\s*(.+)$/i))) jetzt.genres = m[1].split(',').map(s => s.trim()).filter(Boolean);
+    else if ((m = z.match(/^lieblingsfilm:\s*(.+)$/i))) jetzt.film = m[1].trim();
+  }
+  return [...antworten.values()];
+}
+
+function zeile(was, anzahl, max, namen, top, klasse = '') {
+  const d = document.createElement('div'); d.className = `zeile ${klasse} ${top ? 'top' : ''}`;
+  const a = document.createElement('span'); a.className = 'was'; a.textContent = was;
+  const b = document.createElement('span'); b.className = 'balken'; const i = document.createElement('i'); i.style.width = `${max ? (anzahl / max) * 100 : 0}%`; b.append(i);
+  const z = document.createElement('span'); z.className = 'zahl'; z.textContent = anzahl;
+  d.append(a, b, z);
+  if (namen.length) { const w = document.createElement('span'); w.className = 'wer'; w.textContent = namen.join(', '); d.append(w); }
+  return d;
+}
+
+let letzte = [];
+function auswerten() {
+  const text = $('eingabe').value;
+  try { localStorage.setItem(SPEICHER, text); } catch {}
+  const liste = lesen(text);
+  letzte = liste;
+  $('fehler').textContent = text.trim() && !liste.length ? 'Keine Antwort gefunden. Jede Antwort braucht eine Zeile „Name: …“ – füge die Nachrichten so ein, wie sie aus der Einladung kommen.' : '';
+  $('ergebnis').hidden = !liste.length;
+  if (!liste.length) return;
+
+  const zusagen = liste.filter(p => !p.keiner && p.termine.length);
+  $('kAntworten').textContent = liste.length;
+  $('kZusagen').textContent = zusagen.length;
+  $('kAbsagen').textContent = liste.filter(p => p.keiner).length;
+
+  // Termine: alle aus der Einladung (auch mit 0), dazu unbekannte, die jemand geschrieben hat
+  const alle = [...E.termine, ...new Set(liste.flatMap(p => p.termine).filter(t => !E.termine.includes(t)))];
+  const proTermin = alle.map(t => ({ t, namen: liste.filter(p => p.termine.includes(t)).map(p => p.name) }));
+  const maxT = Math.max(0, ...proTermin.map(x => x.namen.length));
+  const beste = proTermin.filter(x => x.namen.length === maxT && maxT > 0);
+  $('bester').textContent = beste.length
+    ? `${beste.length === 1 ? 'Bester Termin' : 'Beste Termine'}: ${beste.map(x => x.t).join(' · ')} – ${maxT} von ${liste.length}`
+    : 'Noch kein Termin gewählt';
+  $('termine').replaceChildren(...proTermin.map(x => zeile(x.t, x.namen.length, liste.length, x.namen, x.namen.length === maxT && maxT > 0)));
+
+  // Genres: Rangliste nach Stimmen
+  const namenG = [...E.genres.map(g => g.name), ...new Set(liste.flatMap(p => p.genres).filter(g => !E.genres.some(x => x.name === g)))];
+  const proGenre = namenG.map(g => ({ g, namen: liste.filter(p => p.genres.includes(g)).map(p => p.name) })).sort((a, b) => b.namen.length - a.namen.length);
+  const maxG = Math.max(0, ...proGenre.map(x => x.namen.length));
+  $('genres').replaceChildren(...proGenre.map(x => zeile(x.g, x.namen.length, maxG, x.namen, x.namen.length === maxG && maxG > 0, 'genre')));
+
+  // Tabelle
+  $('tabelle').replaceChildren(...liste.map(p => {
+    const tr = document.createElement('tr');
+    const zellen = [p.name, p.keiner ? 'leider an keinem' : p.termine.join(', ') || '–', p.genres.join(', ') || '–', p.film || '–'];
+    zellen.forEach((t, i) => { const td = document.createElement('td'); td.textContent = t; if (i === 1 && p.keiner) td.className = 'absage'; if (t === '–') td.className = 'leer'; tr.append(td); });
+    return tr;
+  }));
+}
+
+function zusammenfassung() {
+  const l = letzte;
+  if (!l.length) return '';
+  const proTermin = E.termine.map(t => `${t}: ${l.filter(p => p.termine.includes(t)).map(p => p.name).join(', ') || '–'}`);
+  const genres = E.genres.map(g => [g.name, l.filter(p => p.genres.includes(g.name)).length]).filter(([, n]) => n).sort((a, b) => b[1] - a[1]).map(([g, n]) => `${g} (${n})`);
+  return [`${E.titel} – Auswertung (${l.length} Antworten)`, '', 'Termine:', ...proTermin, '', `Genres: ${genres.join(', ') || '–'}`,
+    `Lieblingsfilme: ${l.filter(p => p.film).map(p => `${p.film} (${p.name})`).join('; ') || '–'}`].join('\n');
+}
+
+$('auswerten').addEventListener('click', auswerten);
+$('eingabe').addEventListener('input', () => { try { localStorage.setItem(SPEICHER, $('eingabe').value); } catch {} });
+$('leeren').addEventListener('click', () => {
+  if (!confirm('Eingefügte Antworten und Auswertung löschen?')) return;
+  $('eingabe').value = ''; letzte = []; $('ergebnis').hidden = true; $('fehler').textContent = '';
+  try { localStorage.removeItem(SPEICHER); } catch {}
+});
+$('kopieren').addEventListener('click', async () => {
+  if (!letzte.length) auswerten();
+  const text = zusammenfassung();
+  if (!text) return;
+  try { await navigator.clipboard.writeText(text); $('kopieren').textContent = 'Kopiert ✓'; }
+  catch { const t = document.createElement('textarea'); t.value = text; document.body.append(t); t.select(); document.execCommand('copy'); t.remove(); $('kopieren').textContent = 'Kopiert ✓'; }
+  setTimeout(() => { $('kopieren').textContent = 'Zusammenfassung kopieren'; }, 2500);
+});
+try { const alt = localStorage.getItem(SPEICHER); if (alt) { $('eingabe').value = alt; auswerten(); } } catch {}
+</script>
+</body>
+</html>
