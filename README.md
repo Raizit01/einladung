@@ -5,7 +5,7 @@ Einladungsseiten für Chris' Quizabende, als GitHub-Pages-Seite.
 - **Filmabend · Special Edition:** https://raizit01.github.io/einladung/filmabend-2/
 
 ## Termine und Texte ändern
-In `filmabend-2/index.html` ganz unten steht der Block `EINLADUNG` (Titel, Uhrzeit, Ort, Antwortfrist, Termine, Genres). Ändern, speichern, committen, pushen. Nach etwa einer Minute ist die Seite online aktualisiert.
+In `filmabend-2/index.html` ganz unten steht der Block `EINLADUNG` (Titel, Uhrzeit, Ort, Antwortfrist, Termine samt Kurzfassung fürs Menü, Genres). Ändern, speichern, committen, pushen. Nach etwa einer Minute ist die Seite online aktualisiert.
 
 ## Datenschutz
 - Die Seite speichert nichts auf einem Server.

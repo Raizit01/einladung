@@ -307,9 +307,10 @@ const EINLADUNG = {
   uhrzeit: 'ab 19:00 Uhr',
   ort: 'bei Chris',
   saal: 'Wohnzimmer',
-  antwortBis: 'Sonntag, 9. November',
-  // Platzhalter – Chris trägt die echten Termine ein
-  termine: ['Fr 14.11.', 'Sa 15.11.', 'Fr 21.11.', 'Sa 22.11.'],
+  antwortBis: 'Sonntag, 1. November',
+  // Mögliche Termine (Chris, 26.10.2026); im Menü steht die Kurzfassung
+  termine: ['Fr 6.11.', 'Sa 7.11.', 'So 8.11.', 'Mo 9.11.', 'Di 10.11.', 'Mi 11.11.', 'Mi 18.11.', 'Di 24.11.', 'Mi 25.11.', 'Mo 30.11.'],
+  termineKurz: '6.–11. · 18. · 24.–25. · 30. November',
   maxGenres: 3,
   kapitelZahl: 14,
   genres: [
@@ -341,7 +342,7 @@ const $ = id => document.getElementById(id);
 const E = EINLADUNG;
 document.querySelectorAll('[data-text]').forEach(el => { const v = E[el.dataset.text]; if (v) el.textContent = v; });
 document.title = `${E.titel} · ${E.zusatz}`;
-$('infoWann').textContent = E.termine.join(' · ');
+$('infoWann').textContent = E.termineKurz || E.termine.join(' · ');
 $('kapitel').innerHTML = '';
 E.kapitel.forEach(([t, s]) => { const d = document.createElement('div'); const b = document.createElement('b'); b.textContent = t; d.append(b, s); $('kapitel').append(d); });
 
