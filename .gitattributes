@@ -1,0 +1,2 @@
+# Kalenderdateien brauchen CRLF (RFC 5545): unverändert speichern
+*.ics -text

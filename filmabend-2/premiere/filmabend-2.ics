@@ -1,0 +1,22 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Quizabend//Filmabend 2//DE
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:filmabend-2-20261118T190000@quizabend
+DTSTAMP:20261102T120000Z
+DTSTART:20261118T190000
+DTEND:20261118T233000
+SUMMARY:Filmabend 2 · Das Film- und Serienquiz
+LOCATION:Wohnzimmer bei Chris
+DESCRIPTION:Handy mit vollem Akku mitbringen. Im Spiel denselben Vorna
+ men eintippen wie in der Einladung\, dann wartet dieselbe Rolle im Vor
+ spann.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Filmabend 2 · Handy laden!
+TRIGGER:-PT3H
+END:VALARM
+END:VEVENT
+END:VCALENDAR
