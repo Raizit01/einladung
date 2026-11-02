@@ -18,6 +18,9 @@ window.EINLADUNG = {
   kalenderEnde: [2026, 11, 18, 23, 30],
   // Ab hier gilt der Abend als vorbei („Fortsetzung folgt“)
   vorbeiAb: [2026, 11, 19, 4, 0],
+  // Tür-Ritual: Ab hier (bis vorbeiAb) zeigt der Backstage-Pass „Am Einlass vorzeigen“, und der Gastgeber entwertet ihn mit
+  // einem Wisch (Texte unten bei „tuer“). Vorher ist davon nichts zu sehen. Testen: ?jetzt=2026-11-18T18:55
+  einlassAb: [2026, 11, 18, 17, 0],
   datumPass: 'Mi 18.11.2026',
   uhrzeitPass: '19:00 Uhr',
   saal: 'Wohnzimmer',
@@ -365,5 +368,27 @@ window.EINLADUNG = {
     // Für die feste Datei filmabend-2.ics (iPhone): ohne Name und Rolle. Nach einer Änderung hier die Datei neu bauen
     // (Termin, Titel und Ort stehen dort ebenfalls fest drin).
     kalenderTextFest: 'Handy mit vollem Akku mitbringen. Im Spiel denselben Vornamen eintippen wie in der Einladung, dann wartet dieselbe Rolle im Vorspann.',
+  },
+
+  /* ---------- 14 · Am Abend: Tür-Ritual (Pass entwerten) ---------- */
+  // Nur ab einlassAb sichtbar. {zeit} = Uhrzeit des Stempels (z. B. 19:04). Der Gastgeber wischt einmal quer über den
+  // Abschnitt unten am Pass, dann knallt der Stempel. Kein Geheimnis: Wer wischt, entwertet.
+  tuer: {
+    vorzeigen: 'AM EINLASS VORZEIGEN',
+    wischen: 'Der Gastgeber wischt hier quer. Du hältst nur still.',
+    nurWischen: 'Wischen, nicht tippen. Das ist Sache des Gastgebers.',
+    stempel: 'ENTWERTET',
+    willkommen: 'Willkommen',
+    abschnitt: 'Abschnitt einbehalten · {zeit}',
+    countdown: 'Eingecheckt um {zeit} · Das Sofa wartet',
+    hinweis: 'Heute Abend an der Tür vorzeigen. Der Gastgeber entwertet ihn mit einem Wisch. Kein Wisch, kein Sofa.',
+    hinweisEntwertet: 'Entwertet um {zeit}. Ab jetzt zählt nur noch, was auf dem Fernseher passiert.',
+    menueNeben: 'an der Tür zeigen',
+    menueNebenEntwertet: '✓ {zeit}',
+    kopf: 'Eingecheckt',
+    kopfUnter: '{zeit} · Willkommen im Wohnzimmer',
+    willkommenKnopf: '▶ Backstage-Pass vorzeigen',
+    aria: 'Abschnitt zum Entwerten. Der Gastgeber wischt hier einmal quer darüber.',
+    ariaEntwertet: 'Entwertet um {zeit}. Willkommen.',
   },
 };

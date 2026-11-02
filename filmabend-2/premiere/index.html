@@ -533,6 +533,52 @@ body[data-szene="kino"] #ton{opacity:.55}
 .pass-knoepfe{display:flex;flex-direction:column;gap:10px;margin-top:18px;width:100%;max-width:400px}
 .tipp{text-align:center;color:var(--leise);font-size:14px;margin:14px 0 0}
 
+/* Tür-Ritual am Abend: Abschnitt zum Entwerten (Gastgeber wischt quer) und Stempel ENTWERTET */
+.pass:not(.umgedreht) .seite-r,.pass.umgedreht .seite-v{pointer-events:none}
+.p-abriss{position:relative;margin-top:2px;padding:12px 14px;border-top:2px dashed rgba(196,232,255,.4);touch-action:pan-y;-webkit-user-select:none;user-select:none;cursor:ew-resize;-webkit-tap-highlight-color:transparent}
+.p-abriss::before,.p-abriss::after{content:"";position:absolute;top:-9px;width:16px;height:16px;border-radius:50%;background:#02040c;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+.p-abriss::before{left:-8px}
+.p-abriss::after{right:-8px}
+.p-abriss:focus-visible{outline:2px solid var(--hell);outline-offset:-4px}
+.ab-schnitt{position:absolute;left:0;top:-2px;width:100%;height:3px;z-index:2;background:linear-gradient(90deg,#ffe58a,#fff6c8,#ffd36b);box-shadow:0 0 12px 2px rgba(245,196,69,.75);
+  transform-origin:0 50%;transform:scaleX(0);opacity:0;pointer-events:none}
+.ab-schnitt.an{opacity:1}
+.ab-schnitt.zurueck{transition:transform .25s ease-in,opacity .25s}
+.ab-stub{position:relative;overflow:hidden;text-align:center;border-radius:8px;padding:8px 10px 9px;background:linear-gradient(180deg,rgba(227,38,63,.2),rgba(227,38,63,.07));box-shadow:inset 0 0 0 1px rgba(255,110,130,.5)}
+.ab-stub b{display:block;font-family:var(--osd);font-weight:500;letter-spacing:.18em;font-size:16px;color:#ff7084;text-shadow:0 0 12px rgba(227,38,63,.7)}
+.ab-stub span{display:block;font-size:12px;line-height:1.3;color:var(--leise);margin-top:3px}
+.ab-pfeile{display:flex;justify-content:center;gap:6px;margin-top:6px}
+.ab-pfeile i{width:8px;height:8px;border-top:2px solid #ffe58a;border-right:2px solid #ffe58a;transform:rotate(45deg);opacity:.25;animation:abPfeil 1.4s ease-in-out infinite}
+.ab-pfeile i:nth-child(2){animation-delay:.18s}
+.ab-pfeile i:nth-child(3){animation-delay:.36s}
+@keyframes abPfeil{0%,100%{opacity:.25}40%{opacity:1}}
+.ab-glanz{position:absolute;inset:0;background:linear-gradient(100deg,transparent 35%,rgba(255,255,255,.2) 50%,transparent 65%);opacity:0;pointer-events:none;animation:abGlanz 3.2s ease-in-out 1s infinite}
+@keyframes abGlanz{0%{opacity:1;transform:translateX(-100%)}55%{opacity:1;transform:translateX(100%)}56%,100%{opacity:0;transform:translateX(100%)}}
+.ab-rest{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;font-family:var(--osd);letter-spacing:.14em;text-transform:uppercase;font-size:11.5px;color:#9fb8e0;opacity:0;pointer-events:none}
+.p-abriss.fertig{cursor:default;border-top-color:rgba(245,196,69,.4)}
+.p-abriss.fertig .ab-stub{visibility:hidden}
+.p-abriss.fertig .ab-schnitt{opacity:0}
+.p-abriss.fertig .ab-rest{opacity:1}
+.p-abriss.reisst .ab-stub{visibility:visible;animation:abFallen .55s cubic-bezier(.55,0,.85,.4) both}
+@keyframes abFallen{from{opacity:1;transform:none}to{opacity:0;transform:translate(12px,72px) rotate(8deg)}}
+.p-abriss.reisst .ab-schnitt{animation:abSchnittWeg .6s .1s both}
+@keyframes abSchnittWeg{from{opacity:1}to{opacity:0}}
+.p-abriss.reisst .ab-rest{animation:abRestRein .5s .4s both}
+@keyframes abRestRein{from{opacity:0}to{opacity:1}}
+.pass .stempel.entwertet{left:50%;top:55%;z-index:4;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:clamp(28px,9vw,36px);line-height:1;letter-spacing:.14em;
+  border-width:4px;padding:7px 14px 6px 19px;color:#ff3550;background:rgba(20,0,6,.72);text-shadow:0 0 14px rgba(255,40,70,.35);opacity:0;transform:translate(-50%,-50%) rotate(-11deg);
+  -webkit-mask-size:220px 110px;mask-size:220px 110px}
+.pass .stempel.entwertet b{font-weight:500}
+.pass .stempel.entwertet small{font-size:15px;letter-spacing:.16em}
+.pass .stempel.entwertet.da{opacity:.95}
+.pass .stempel.entwertet.knall{animation:entwertetKnall .45s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes entwertetKnall{0%{opacity:0;transform:translate(-50%,-50%) rotate(-11deg) scale(2.8)}60%{opacity:1;transform:translate(-50%,-50%) rotate(-11deg) scale(.9)}100%{opacity:.95;transform:translate(-50%,-50%) rotate(-11deg) scale(1)}}
+.pass-hinweis.tuer{color:#ffb3bd}
+.menue-liste button.tuer.offen{border-color:#ff7084;box-shadow:0 0 22px rgba(227,38,63,.3)}
+.menue-liste button.tuer.offen .neben{color:#ff9aa8}
+.menue-liste button.tuer.entwertet .neben{color:var(--gold)}
+.player .text-anzeige.eingecheckt{color:#ffe58a;text-shadow:0 0 12px rgba(245,196,69,.7)}
+
 /* Meldung (DVD-Fehler), Toast, Outtakes, Szene nach dem Abspann */
 #meldung{display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
 .meldung-box{width:min(100%,460px);background:linear-gradient(180deg,#142c60,#061028);border-radius:14px;padding:20px 20px 16px;text-align:center;
@@ -656,6 +702,7 @@ body[data-szene="kino"] #ton{opacity:.55}
     <div class="logo" aria-hidden="true"><span class="zwei goldtext">2</span><span class="wort chrom">FILMABEND</span></div>
     <p class="infozeile" data-text="infozeile"></p>
     <p id="willkommenText"></p>
+    <button class="knopf gold" type="button" id="passVorzeigen" hidden></button>
     <button class="knopf gold" type="button" id="zumMenue"></button>
     <button class="leise-knopf" type="button" id="vorspannNochmal"></button>
     <button class="link-knopf" type="button" id="neuEinchecken"></button>
@@ -804,7 +851,7 @@ body[data-szene="kino"] #ton{opacity:.55}
         </div>
       </div>
     </div>
-    <p class="pass-hinweis" data-text="pass.umdrehen"></p>
+    <p class="pass-hinweis" id="passHinweis" data-text="pass.umdrehen"></p>
     <div class="pass-knoepfe">
       <button class="knopf gold breit" type="button" id="alsBild" data-text="pass.bild"></button>
       <button class="leise-knopf" type="button" id="kalender" data-text="pass.kalender"></button>

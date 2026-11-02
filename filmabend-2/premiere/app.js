@@ -3,7 +3,9 @@
    Texte stehen in einladung.js, die Rollen in rollen.js, Zeichnungen in motive.js, Klänge in ton.js.
    Nichts wird gesendet: Name, Geheimnisse und „gesichtet“ liegen nur in localStorage auf diesem Handy.
    Zum Testen: ?name=Max (zeigt sofort den Steckbrief, speichert nichts), ?name=Max&ab=starring (Einlass, dann ab dieser
-   Szene: logo, trailer, titel, freigabe, starring, akte, menue, kapitel, besetzung, bonus, pass), ?jetzt=2026-11-18T18:59:30 */
+   Szene: logo, trailer, titel, freigabe, starring, akte, menue, kapitel, besetzung, bonus, pass), ?jetzt=2026-11-18T18:59:30
+   Tür-Ritual am Abend (Pass entwerten): ?jetzt=2026-11-18T18:55, dann Backstage-Pass. Ein Stempel aus einer Probezeit gilt nur,
+   solange ?jetzt= in der Adresse steht, und nie am echten Abend. */
 (function () {
   'use strict';
   const E = window.EINLADUNG, R = window.FILMABEND2_ROLLEN, M = window.MOTIVE, TON = window.TON, K = window.KLANG;
@@ -26,7 +28,7 @@
 
   /* ---------- Zustand (nur auf diesem Handy) ---------- */
   const SPEICHER = 'filmabend2-premiere';
-  const S = { name: '', test: false, regie: false, geheim: new Set(), gesichtet: new Set(), unterschrieben: false, stumm: false };
+  const S = { name: '', test: false, regie: false, geheim: new Set(), gesichtet: new Set(), unterschrieben: false, stumm: false, entwertet: null };
   try {
     const d = JSON.parse(localStorage.getItem(SPEICHER) || 'null');
     if (d && typeof d === 'object') {
@@ -34,11 +36,13 @@
       (Array.isArray(d.geheim) ? d.geheim : []).forEach(g => { if (E.geheimnisse.liste.some(([id]) => id === g)) S.geheim.add(g); });
       (Array.isArray(d.gesichtet) ? d.gesichtet : []).forEach(i => { if (Number.isInteger(i) && i >= 0 && i < E.kapitel.length) S.gesichtet.add(i); });
       S.unterschrieben = !!d.unterschrieben; S.stumm = !!d.stumm; S.regie = !!d.regie;
+      const ew = d.entwertet; // Tür-Ritual: { zeit: '19:04', ms, probe } – ob er gilt, prüft entwertetZeit()
+      if (ew && typeof ew === 'object' && typeof ew.zeit === 'string' && /^\d{2}:\d{2}$/.test(ew.zeit) && Number.isFinite(ew.ms)) S.entwertet = { zeit: ew.zeit, ms: ew.ms, probe: !!ew.probe };
     }
   } catch (e) { /* kein Speicher – geht auch so */ }
   function merken() {
     if (S.test) return;
-    try { localStorage.setItem(SPEICHER, JSON.stringify({ name: S.name, geheim: [...S.geheim], gesichtet: [...S.gesichtet], unterschrieben: S.unterschrieben, stumm: S.stumm, regie: S.regie })); } catch (e) { /* egal */ }
+    try { localStorage.setItem(SPEICHER, JSON.stringify({ name: S.name, geheim: [...S.geheim], gesichtet: [...S.gesichtet], unterschrieben: S.unterschrieben, stumm: S.stumm, regie: S.regie, entwertet: S.entwertet })); } catch (e) { /* egal */ }
   }
   function saeubern(n) { return String(n || '').replace(/[\u0000-\u001f\u007f<>]/g, '').replace(/\s+/g, ' ').trim(); }
 
@@ -49,7 +53,7 @@
   const rolle = () => (istRegie() ? E.regie.rolle : R.rolleFuer(S.name));
   const brief = () => (istRegie() ? E.regie : E.steckbrief[rolle()]);
   const initial = () => ([...S.name][0] || '?').toUpperCase();
-  const fuell = t => String(t).replace(/\{name\}/g, () => S.name).replace(/\{rolle\}/g, () => rolle()).replace(/\{tage\}/g, () => rest().tage);
+  const fuell = t => String(t).replace(/\{name\}/g, () => S.name).replace(/\{rolle\}/g, () => rolle()).replace(/\{tage\}/g, () => rest().tage).replace(/\{zeit\}/g, () => entwertetZeit());
   /** Schriftgröße für Namen nach Länge (CSS-Variable --gr) */
   function groesse(el, maxPx, anteil, minPx = 22) {
     const n = Math.max(3, [...S.name].length);
@@ -69,6 +73,16 @@
   const zahl = n => n.toLocaleString('de-DE');
   const mz = (n, eins, viele) => `${n} ${n === 1 ? eins : viele}`;
   const heute = () => jetzt().toDateString() === ZIEL.toDateString();
+  // Tür-Ritual: Ab EINLASS bis VORBEI zeigt der Pass „Am Einlass vorzeigen“, der Gastgeber entwertet ihn mit einem Wisch
+  const EINLASS = datum(E.einlassAb || E.beginn);
+  const tuerOffen = () => { const n = jetzt(); return n >= EINLASS && n < VORBEI; };
+  /** Uhrzeit des Stempels („19:04“) oder '' – vor dem Einlass nie, und ein Probe-Stempel (mit ?jetzt=) nur mit ?jetzt= */
+  function entwertetZeit() {
+    const e = S.entwertet;
+    if (!e || (e.probe && !zeitVersatz) || jetzt() < EINLASS || !(e.ms >= EINLASS && e.ms < VORBEI)) return '';
+    return e.zeit;
+  }
+  const abrissZustand = () => (entwertetZeit() ? 'entwertet' : tuerOffen() ? 'offen' : 'aus');
 
   /* ---------- Teilchen (Staub, Funken, Glut, Goldstaub) ---------- */
   const T = (() => {
@@ -133,7 +147,8 @@
   }
   function beben(el) { if (ruhig || !el) return; el.classList.remove('beben'); void el.offsetWidth; el.classList.add('beben'); }
   function wackeln(el) { if (!el) return; el.classList.remove('wackeln'); void el.offsetWidth; el.classList.add('wackeln'); }
-  function vib(m) { if (ruhig) return; try { if (navigator.vibrate) navigator.vibrate(m); } catch (e) { /* egal */ } }
+  // Vibration nur nach einem echten Tipp auf der Seite (sonst blockiert Chrome sie und meldet einen Fehler in der Konsole)
+  function vib(m) { if (ruhig) return; try { if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return; if (navigator.vibrate) navigator.vibrate(m); } catch (e) { /* egal */ } }
 
   /* ---------- Ton-Schalter ---------- */
   // Der Knopf nennt die Aktion, nicht den Zustand (sonst tippen Gäste „Ton an“ und schalten damit stumm)
@@ -196,7 +211,7 @@
     if (!S.stumm) K.entsperren();
     TON.samtseil();
     feld.blur();
-    if (n !== S.name) { S.unterschrieben = false; }
+    if (n !== S.name) { S.unterschrieben = false; S.entwertet = null; }
     S.name = n;
     if (!istBeispiel(n)) merken();
     if (startAb !== 'logo') return springe(startAb);
@@ -215,13 +230,17 @@
     T.alleWeg(); T.quelle('staub', { rate: 4, dauer: 1e6 });
     $('willkommenText').textContent = fuell(E.einlass.willkommen);
     $('zumMenue').textContent = E.einlass.zumMenue;
+    const tuer = abrissZustand() === 'offen';
+    $('passVorzeigen').hidden = !tuer; $('passVorzeigen').textContent = E.tuer.willkommenKnopf;
+    $('zumMenue').classList.toggle('gold', !tuer);
     $('vorspannNochmal').textContent = E.einlass.vorspannNochmal;
     $('neuEinchecken').textContent = fuell(E.einlass.neu);
   }
   $('zumMenue').addEventListener('click', () => { if (!S.stumm) K.entsperren(); TON.klick(); zeigeSzene('menue'); });
+  $('passVorzeigen').addEventListener('click', () => { if (!S.stumm) K.entsperren(); TON.klick(); zeigeSzene('pass'); });
   $('vorspannNochmal').addEventListener('click', () => { if (!S.stumm) K.entsperren(); TON.samtseil(); vorspann('logo', S.unterschrieben ? 'menue' : 'akte'); });
   $('neuEinchecken').addEventListener('click', () => {
-    S.name = ''; S.unterschrieben = false; merken(); feld.value = '';
+    S.name = ''; S.unterschrieben = false; S.entwertet = null; merken(); feld.value = '';
     einlassZeigen(); setTimeout(() => feld.focus(), 50);
   });
 
@@ -510,8 +529,12 @@
   /* ---------- 9 · DVD-Hauptmenü ---------- */
   let anzeigeModus = 0;
   function menueFuellen() {
-    $('menueListe').innerHTML = E.menue.punkte.map(([ziel, text], i) =>
-      `<button type="button" data-geh="${ziel}" class="${i === 0 ? 'haupt' : ''}"><span class="pfeil" aria-hidden="true">▶</span>${esc(text.replace(/^▶\s*/, ''))}${i === 0 ? `<span class="neben">${esc(E.datumPass)}</span>` : ''}</button>`).join('');
+    const tuer = abrissZustand(), tuerNeben = tuer === 'offen' ? E.tuer.menueNeben : tuer === 'entwertet' ? fuell(E.tuer.menueNebenEntwertet) : '';
+    $('menueListe').innerHTML = E.menue.punkte.map(([ziel, text], i) => {
+      const neben = i === 0 ? E.datumPass : ziel === 'pass' ? tuerNeben : '';
+      const klasse = i === 0 ? 'haupt' : ziel === 'pass' && tuer !== 'aus' ? 'tuer ' + tuer : '';
+      return `<button type="button" data-geh="${ziel}" class="${klasse}"><span class="pfeil" aria-hidden="true">▶</span>${esc(text.replace(/^▶\s*/, ''))}${neben ? `<span class="neben">${esc(neben)}</span>` : ''}</button>`;
+    }).join('');
     $('besetzt').innerHTML = `${esc(E.menue.besetzt)} <b>${esc(S.name)}</b><span class="rolle-gold">${esc(rolle())}</span>`;
     laufbandBauen();
     treibenBauen();
@@ -544,6 +567,13 @@
   /** Player-Anzeige mit Klappziffern */
   function anzeigeZeichnen(neu) {
     const a = $('anzeige'), unter = $('anzeigeUnter'), z = zustand(), r = rest();
+    if (entwertetZeit() && z !== 'vorbei' && (z !== 'vor' || anzeigeModus === 0)) {
+      if (a.dataset.modus === 'eingecheckt' && !neu) return;
+      a.innerHTML = `<span class="text-anzeige eingecheckt">✓ ${esc(E.tuer.kopf)}</span>`;
+      unter.textContent = fuell(E.tuer.kopfUnter);
+      a.setAttribute('aria-label', `${E.tuer.kopf}, ${fuell(E.tuer.kopfUnter)}`);
+      a.dataset.modus = 'eingecheckt'; return;
+    }
     if (z !== 'vor') {
       a.innerHTML = `<span class="text-anzeige">${z === 'laeuft' ? 'Läuft gerade' : 'Fortsetzung folgt'}</span>`;
       unter.textContent = z === 'laeuft' ? 'Heute Abend! · jetzt im Wohnzimmer' : 'Danke fürs Mitspielen';
@@ -764,6 +794,7 @@
   }
   function passCountdown() {
     const z = zustand(), r = rest();
+    if (z !== 'vorbei' && entwertetZeit()) return fuell(E.tuer.countdown);
     if (z === 'laeuft') return 'Läuft gerade · ab ins Wohnzimmer!';
     if (z === 'vorbei') return 'Danke fürs Mitspielen · Fortsetzung folgt';
     return `${heute() ? 'Heute Abend! · ' : ''}Noch ${r.tage} T · ${r.std} Std · ${r.min} Min bis zum Vorspann`;
@@ -787,8 +818,12 @@
       <div class="holo" id="holo"></div>
       <div class="p-unten"><div class="p-countdown" id="passCountdown">${esc(passCountdown())}</div>
         <div class="p-code">${barcode()}<div class="sticker${gold ? ' gold' : ''}">${gold ? esc(E.pass.sticker) : 'Platz für Sticker'}</div></div>
-        <div class="p-fuss">${esc(E.pass.fussnote)}</div></div>`;
+        <div class="p-fuss">${esc(E.pass.fussnote)}</div></div>${abrissHtml()}`;
     groesse($('passName'), 30, 0.4, 15);
+    passBauen.stand = abrissZustand(); abrissVerdrahten();
+    const hw = $('passHinweis'), tz = passBauen.stand;
+    hw.textContent = tz === 'offen' ? E.tuer.hinweis : tz === 'entwertet' ? fuell(E.tuer.hinweisEntwertet) : E.pass.umdrehen;
+    hw.classList.toggle('tuer', tz === 'offen');
     $('passHinten').innerHTML = `<h3>Rückseite · Bedingungen</h3><p>${esc(E.pass.rueckseite)}</p>
       <h3>Mitbringen</h3><ul>${E.pass.mitbringen.map(x => `<li>${esc(x)}</li>`).join('')}</ul><p>${esc(E.pass.nichtMitbringen)}</p>
       <div class="r-logo">${esc(E.titel)} ${esc(E.zahl)} · ${esc(E.zusatz)}<br><small>${esc(passNummer())}</small></div>`;
@@ -815,6 +850,90 @@
   });
   passKarte.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); umdrehen(); } });
   function umdrehen() { passKarte.classList.toggle('umgedreht'); TON.papier(); }
+
+  /* ---------- 14 · Tür-Ritual: Pass entwerten (nur am Abend) ---------- */
+  // Unten am Pass sitzt ein Abschnitt mit Perforation. Der Gastgeber wischt an der Tür einmal quer darüber (mindestens 70 %
+  // der Breite, überwiegend waagerecht, in einem Zug). Dann fällt der Abschnitt ab und der Stempel ENTWERTET knallt drauf.
+  // Tippen, Scrollen oder ein kurzer Wischer lösen nichts aus. Mit Tastatur: zweimal Enter.
+  const ABRISS_ANTEIL = 0.7;
+  function stempelHtml(knall) {
+    return `<div class="stempel entwertet ${knall ? 'knall' : 'da'}" id="passEntwertet" role="img" aria-label="${esc(fuell(E.tuer.ariaEntwertet))}">
+      <b>${esc(E.tuer.stempel)}</b><small>${esc(entwertetZeit())} · ${esc(E.tuer.willkommen)}</small></div>`;
+  }
+  function abrissHtml() {
+    const z = abrissZustand();
+    if (z === 'aus') return '';
+    const fertig = z === 'entwertet';
+    return (fertig ? stempelHtml(false) : '') +
+      `<div class="p-abriss${fertig ? ' fertig' : ''}" id="passAbriss" ${fertig ? '' : `role="button" tabindex="0" aria-label="${esc(E.tuer.aria)}"`}>
+        <i class="ab-schnitt" id="abSchnitt" aria-hidden="true"></i>
+        <div class="ab-stub" aria-hidden="${fertig}"><b>${esc(E.tuer.vorzeigen)}</b><span id="abText">${esc(E.tuer.wischen)}</span>
+          <i class="ab-pfeile" aria-hidden="true"><i></i><i></i><i></i></i><i class="ab-glanz" aria-hidden="true"></i></div>
+        <div class="ab-rest" id="abRest">${fertig ? '✂ ' + esc(fuell(E.tuer.abschnitt)) : ''}</div>
+      </div>`;
+  }
+  let abZug = null, abEnter = 0;
+  function abrissVerdrahten() {
+    const ab = $('passAbriss'); if (!ab || ab.classList.contains('fertig')) return;
+    const schnitt = $('abSchnitt');
+    const zeichnen = (von, bis, w) => { schnitt.style.transform = `translateX(${Math.min(von, bis).toFixed(1)}px) scaleX(${(Math.abs(bis - von) / w).toFixed(3)})`; };
+    const zurueck = () => { schnitt.classList.add('zurueck'); schnitt.style.transform = ''; schnitt.classList.remove('an'); setTimeout(() => schnitt.classList.remove('zurueck'), 260); };
+    const hinweis = () => { $('abText').textContent = E.tuer.nurWischen; wackeln(ab.querySelector('.ab-stub')); TON.trocken(); };
+    ab.addEventListener('pointerdown', e => {
+      e.stopPropagation(); // sonst dreht sich der Pass um
+      if (abrissZustand() !== 'offen' || abZug) return;
+      const r = ab.getBoundingClientRect();
+      abZug = { id: e.pointerId, x0: e.clientX, y0: e.clientY, l: r.left, w: r.width, dyMax: 0, weg: 0 };
+      try { ab.setPointerCapture(e.pointerId); } catch (x) { /* egal */ }
+    });
+    ab.addEventListener('pointermove', e => {
+      if (!abZug || e.pointerId !== abZug.id) return;
+      e.stopPropagation();
+      const z = abZug, dx = e.clientX - z.x0, dy = Math.abs(e.clientY - z.y0);
+      z.dyMax = Math.max(z.dyMax, dy); z.weg = Math.max(z.weg, Math.abs(dx));
+      // Zu steil: das ist Scrollen, kein Wisch
+      if (z.dyMax > Math.max(44, Math.abs(dx) * 0.6)) { abZug = null; return zurueck(); }
+      schnitt.classList.add('an'); zeichnen(z.x0 - z.l, e.clientX - z.l, z.w);
+      if (Math.abs(dx) >= z.w * ABRISS_ANTEIL) { abZug = null; zeichnen(0, z.w, z.w); entwerten(); }
+    });
+    const ende = e => {
+      if (!abZug || e.pointerId !== abZug.id) return;
+      e.stopPropagation();
+      const z = abZug; abZug = null;
+      zurueck();
+      if (e.type === 'pointerup' && z.weg < 10) hinweis();
+    };
+    ab.addEventListener('pointerup', ende);
+    ab.addEventListener('pointercancel', ende);
+    ab.addEventListener('keydown', e => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault(); e.stopPropagation();
+      const n = performance.now();
+      if (n - abEnter < 3000) { abEnter = 0; schnitt.classList.add('an'); zeichnen(0, ab.clientWidth, ab.clientWidth); return entwerten(); }
+      abEnter = n; hinweis();
+    });
+  }
+  function entwerten() {
+    if (abrissZustand() !== 'offen') return;
+    const n = jetzt();
+    S.entwertet = { zeit: `${p2(n.getHours())}:${p2(n.getMinutes())}`, ms: n.getTime(), probe: zeitVersatz !== 0 };
+    merken();
+    passBauen.stand = 'entwertet';
+    const ab = $('passAbriss');
+    ab.classList.add('fertig', 'reisst'); ab.removeAttribute('role'); ab.removeAttribute('tabindex'); ab.removeAttribute('aria-label');
+    ab.querySelector('.ab-stub').setAttribute('aria-hidden', 'true');
+    $('abRest').textContent = '✂ ' + fuell(E.tuer.abschnitt);
+    TON.papier(); vib(25);
+    setTimeout(() => {
+      if (aktSzene !== 'pass' || $('passEntwertet')) return;
+      $('passVorne').insertAdjacentHTML('beforeend', stempelHtml(true));
+      TON.stempel(1.2); vib(90); beben(passKarte.parentElement);
+      const st = $('passEntwertet').getBoundingClientRect();
+      T.stoss('funken', 16, { x: st.left + st.width / 2, y: st.top + st.height * 0.6, b: st.width * 0.45 });
+      const c = $('passCountdown'); if (c) c.textContent = passCountdown();
+      const hw = $('passHinweis'); hw.textContent = fuell(E.tuer.hinweisEntwertet); hw.classList.remove('tuer');
+    }, ruhig ? 0 : 240);
+  }
   if (window.DeviceOrientationEvent && !ruhig) {
     addEventListener('deviceorientation', e => {
       if (aktSzene !== 'pass' || e.gamma == null) return;
@@ -945,6 +1064,20 @@
     g.font = '500 46px Oswald, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
     const st = regie ? E.check.regieStempel : E.check.stempel, sw = g.measureText(st).width + 40;
     rund(-sw / 2, -40, sw, 80, 10); g.stroke(); g.fillText(st, 0, 3); g.restore();
+    // Tür-Ritual: Stempel ENTWERTET über den Feldern
+    const ez = entwertetZeit();
+    if (ez) {
+      g.save(); g.translate(W / 2, 760); g.rotate(-0.19); g.strokeStyle = 'rgba(255,53,80,.92)'; g.fillStyle = 'rgba(255,53,80,.92)'; g.lineWidth = 8;
+      g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '500 84px Oswald, sans-serif';
+      if ('letterSpacing' in g) g.letterSpacing = '8px';
+      const ew = g.measureText(E.tuer.stempel).width + 56;
+      rund(-ew / 2, -74, ew, 148, 14); g.fillStyle = 'rgba(20,0,6,.86)'; g.fill(); g.stroke();
+      g.fillStyle = 'rgba(255,53,80,.92)'; g.fillText(E.tuer.stempel, 0, -16);
+      g.font = '500 30px Oswald, sans-serif'; if ('letterSpacing' in g) g.letterSpacing = '5px';
+      g.fillText(`${ez} · ${E.tuer.willkommen}`.toUpperCase(), 0, 44);
+      if ('letterSpacing' in g) g.letterSpacing = '0px';
+      g.restore();
+    }
     // Laminat-Glanz
     const gl = g.createLinearGradient(0, 0, W, H); gl.addColorStop(0, 'rgba(255,255,255,.16)'); gl.addColorStop(0.3, 'rgba(255,255,255,0)'); gl.addColorStop(0.7, 'rgba(255,255,255,0)'); gl.addColorStop(1, 'rgba(255,255,255,.07)');
     g.fillStyle = gl; g.fillRect(0, 0, W, H);
@@ -956,7 +1089,10 @@
   /* ---------- Uhr: Countdown live ---------- */
   setInterval(() => {
     if (aktSzene === 'menue') anzeigeZeichnen(false);
-    if (aktSzene === 'pass') { const c = $('passCountdown'); if (c) c.textContent = passCountdown(); }
+    if (aktSzene === 'pass') {
+      const c = $('passCountdown'); if (c) c.textContent = passCountdown();
+      if (!abZug && abrissZustand() !== passBauen.stand) passBauen();
+    }
     if (!$('meldung').hidden && $('meldungTitel').textContent === E.menue.filmStartenTitel && zustand() === 'vor') $('meldungText').textContent = E.menue.filmStartenVor.replace('{rest}', restText());
   }, 1000);
 
@@ -984,7 +1120,7 @@
   const testAb = q.get('ab');
   const SZENEN = ['check', 'logo', 'trailer', 'titel', 'freigabe', 'starring', 'akte', 'menue', 'kapitel', 'besetzung', 'bonus', 'pass'];
   if (testName && !istBeispiel(testName)) {
-    S.test = true; S.name = testName; S.unterschrieben = false;
+    S.test = true; S.name = testName; S.unterschrieben = false; S.entwertet = null;
     if (testAb && SZENEN.includes(testAb)) {
       feld.value = testName; startAb = testAb === 'check' ? 'logo' : testAb;
       einlassZeigen();
